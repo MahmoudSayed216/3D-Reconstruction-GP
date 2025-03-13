@@ -31,9 +31,4 @@ enc = Encoder(device="cpu", pretrained=False)
 
 for idx, data in enumerate(data_loader):
     v, r, l = data
-    print("paefklaemgfkl")
-    print(v.shape)
-    print(r.shape)
-    print("paefklaemgfkl")
-    
     enc(v, r) 

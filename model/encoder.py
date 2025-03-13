@@ -66,13 +66,13 @@ class Encoder(nn.Module):
     def forward_cnn(self, img):
         print(img.shape)
         x = self.ResNet(img)
-        print(x.shape)
+        # print(x.shape)
         x = self.layer1(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.layer2(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.layer3(x)
-        print(x.shape)
+        # print(x.shape)
         return x
 
 
@@ -84,16 +84,14 @@ class Encoder(nn.Module):
     def forward(self, v_imgs, r_imgs):
         r_imgs = r_imgs.permute(1, 0, 2, 3, 4).contiguous()
         v_imgs = v_imgs.permute(1, 0, 2, 3, 4).contiguous()
-        r_imgs = torch.split(r_imgs, 1, dim=0)
-        v_imgs = torch.split(v_imgs, 1, dim=0)
         cnn_outputs = []
         vit_outputs = []
         for image in r_imgs:
-            r = self.forward_cnn(image.squeeze(dim=0))
+            r = self.forward_cnn(image)
             cnn_outputs.append(r)
         for image in v_imgs:
-            v = self.forward_ViT(image.squeeze(dim=0))
+            v = self.forward_ViT(image)
             vit_outputs.append(v)
 
 
-        return 
+        return None
