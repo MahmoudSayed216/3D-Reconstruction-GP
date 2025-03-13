@@ -115,7 +115,7 @@ class ShapeNet3DDataset(Dataset):
         cls = self.classes[class_idx]
         images_base = os.path.join(self.dataset_path, "ShapeNetRendering/ShapeNetRendering",cls, current)
         images_paths = sorted(os.listdir(images_base))
-        ## TODO: exclude the 2 other fiels
+        ## TODO: exclude the 2 other files
         chosen_images = [images_paths[i] for i in self.random_indices]
         # chosen_images = random.sample(images_paths, self.n_views_rendering)
         model_path = os.path.join(self.dataset_path, "ShapeNetVox32/ShapeNetVox32", cls,current,"model.binvox")

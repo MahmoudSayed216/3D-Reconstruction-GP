@@ -30,7 +30,6 @@ class ViTEncoder(nn.Module):
             nn.Linear(self.features_dim, 512),
             nn.LeakyReLU(0.2),
             nn.Linear(512, 512)
-            ##TODO: add batch norm
         )
         
     def forward(self, x):

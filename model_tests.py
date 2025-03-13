@@ -28,7 +28,7 @@ data_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
 
 
 enc = Encoder(device="cpu", pretrained=False)
-
+print(sum(p.numel() for p in enc.parameters()))
 for idx, data in enumerate(data_loader):
     v, r, l = data
     enc(v, r) 
