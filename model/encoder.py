@@ -11,7 +11,10 @@ class Encoder(nn.Module):
         vit = vit.to(device= "cuda:0" if self.device == "cuda" else "cpu")
         vit.heads = nn.Identity()
 
-        self.features_dim = 1024
+        for param in vit.parameters():
+            param.requires_grad = False
+
+        self.features_dim = 768
         self.latent_space_size = 1024
         
         # Projection layer to match the decoder's expected input
@@ -115,9 +118,9 @@ class Encoder(nn.Module):
             vit_outputs.append(v)
         
         level_0_features = torch.stack(level_0_features).permute(1, 0, 2, 3, 4).contiguous()
-        level_1_features = torch.stack(level_0_features).permute(1, 0, 2, 3, 4).contiguous()
-        level_2_features = torch.stack(level_0_features).permute(1, 0, 2, 3, 4).contiguous()
-        level_3_features = torch.stack(level_0_features).permute(1, 0, 2, 3, 4).contiguous()
+        level_1_features = torch.stack(level_1_features).permute(1, 0, 2, 3, 4).contiguous()
+        level_2_features = torch.stack(level_2_features).permute(1, 0, 2, 3, 4).contiguous()
+        level_3_features = torch.stack(level_3_features).permute(1, 0, 2, 3, 4).contiguous()
         vit_outputs = torch.stack(vit_outputs).permute(1, 0, 2)
 
         print(level_0_features.shape)
