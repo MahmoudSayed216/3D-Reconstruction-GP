@@ -1,6 +1,9 @@
 from model.encoder import Encoder
 from Dataset import ShapeNet3DDataset
 import torchvision.transforms as T
+from torch.utils.data import DataLoader
+
+
 
 transformations = T.Compose([
     T.RandomResizedCrop(224),
@@ -18,7 +21,19 @@ train_dataset = ShapeNet3DDataset(
     split='train',
     transforms=transformations
     )
+train_dataset.set_n_views_rendering(10)
+train_dataset.choose_images_indices_for_epoch()
+data_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
 
-data_loader = 
 
-enc = Encoder()
+
+enc = Encoder(device="cpu", pretrained=False)
+
+for idx, data in enumerate(data_loader):
+    v, r, l = data
+    print("paefklaemgfkl")
+    print(v.shape)
+    print(r.shape)
+    print("paefklaemgfkl")
+    
+    enc(v, r) 

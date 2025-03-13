@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision.models import resnet50, vit_l_16, swa
+from torchvision.models import resnet50, vit_l_16
 
 
 class Encoder(nn.Module):
@@ -9,19 +9,19 @@ class Encoder(nn.Module):
         vit = vit_l_16(pretrained=False)
 
         vit = vit.to(device= "cuda:0" if self.device == "cuda" else "cpu")
-        self.vit.heads = nn.Identity()
+        vit.heads = nn.Identity()
         
-        self.features_dim = 768
+        self.features_dim = 1024
         
         # Projection layer to match the decoder's expected input
-        self.projection = nn.Sequential(
+        projection = nn.Sequential(
             nn.Linear(self.features_dim, 512),
             nn.LeakyReLU(0.2),
             nn.Linear(512, 512)
             ##TODO: add batch norm
         )
         
-        return vit
+        return vit, projection
     
 
     def configure_resnet(self, pretrained = True):
@@ -39,7 +39,7 @@ class Encoder(nn.Module):
     def __init__(self, device, pretrained=True):
         super(Encoder, self).__init__()
         self.device = device
-        self.ViT = self.configure_vit(pretrained = pretrained)
+        self.ViT, self.projection = self.configure_vit(pretrained = pretrained)
         self.ResNet = self.configure_resnet(pretrained = pretrained)
        
         self.layer1 = nn.Sequential(*[
@@ -78,17 +78,21 @@ class Encoder(nn.Module):
 
 
     def forward_ViT(self, img):
-        pass
+        return self.projection(self.ViT(img))
 
     
     def forward(self, v_imgs, r_imgs):
+        r_imgs = r_imgs.permute(1, 0, 2, 3, 4).contiguous()
+        v_imgs = v_imgs.permute(1, 0, 2, 3, 4).contiguous()
+        r_imgs = torch.split(r_imgs, 1, dim=0)
+        v_imgs = torch.split(v_imgs, 1, dim=0)
         cnn_outputs = []
         vit_outputs = []
         for image in r_imgs:
-            r = self.forward_cnn(r_imgs)
+            r = self.forward_cnn(image.squeeze(dim=0))
             cnn_outputs.append(r)
         for image in v_imgs:
-            v = self.forward_ViT(v_imgs)
+            v = self.forward_ViT(image.squeeze(dim=0))
             vit_outputs.append(v)
 
 
