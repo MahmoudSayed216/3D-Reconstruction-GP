@@ -2,7 +2,7 @@ from model.encoder import Encoder
 from Dataset import ShapeNet3DDataset
 import torchvision.transforms as T
 from torch.utils.data import DataLoader
-
+from Model import DingDongNet
 
 
 transformations = T.Compose([
@@ -27,8 +27,9 @@ data_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
 
 
 
-enc = Encoder(device="cpu", pretrained=False)
-print(sum(p.numel() for p in enc.parameters()))
+model = DingDongNet(device="cpu", pretrained=False)
+print(sum(p.numel() for p in model.parameters()))
+
 for idx, data in enumerate(data_loader):
     v, r, l = data
-    enc(v, r) 
+    model(v, r) 

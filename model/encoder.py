@@ -19,10 +19,10 @@ class Encoder(nn.Module):
         
         # Projection layer to match the decoder's expected input
         projection = nn.Sequential(
-            nn.Linear(self.features_dim, 512),
-            nn.BatchNorm1d(512),
+            nn.Linear(self.features_dim, 768),
+            nn.BatchNorm1d(768),
             nn.LeakyReLU(0.2),
-            nn.Linear(512, self.latent_space_size),
+            nn.Linear(768, self.latent_space_size),
             nn.BatchNorm1d(self.latent_space_size),
             nn.LeakyReLU(0.2),
         )
