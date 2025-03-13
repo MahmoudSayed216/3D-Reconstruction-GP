@@ -1,0 +1,26 @@
+device: cpu
+dataset: 
+  config_path: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/dataset mapper/ShapeNet3DClone.json"
+  data_path: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Data/Experimental/" 
+  n_classes: 4
+  # voxels_path: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Data/ShapeNetVox32"
+  # images_path: "ShapeNet Rendering"
+  
+model:
+  ef_dim: 32
+  z_dim: 512
+  use_refiner: True
+
+train:
+  batch_size: 16
+  epochs: 10
+  lr: 0.0001
+  beta1: 0.9
+  gamma: 0.5
+  lr_milestones: [30, 60, 90]
+  print_every: 5
+  save_every: 5
+  output_dir: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/weights"
+  n_views_min: 15
+  n_views_min: 6 
+  

@@ -1,0 +1,70 @@
+[
+    {
+        "taxonomy_id": "02691156",
+        "taxonomy_name": "aeroplane",
+        "test": [
+            "1a6ad7a24bb89733f412783097373bdc",
+            "1a04e3eab45ca15dd86060f189eb133"
+        ],
+        "train": [
+            "1a9b552befd6306cc8f2d5fe7449af61"
+        ],
+        "val": [
+            "1a32f10b20170883663e90eaf6b4ca52"
+        ]
+    },
+    {
+        "taxonomy_id": "02828884",
+        "taxonomy_name": "bench",
+        "test": [
+            "1a40eaf5919b1b3f3eaa2b95b99dae6",
+            "1b1cffcc9435c559f155d75bbf62b80"
+            
+        ],
+        "train": [
+            "1acf34aa0cb8f06a19fb4103277a6b93",
+            "1ac6a3d5c76c8b96edccc47bf0dcf5d3",
+            "1aa15011153c5d6aa64b59533813e6d6"
+        ],
+        "val": [
+            "1a55e418c61e9dab6f4a86fe50d4c8f0"
+        ]
+    },
+    {
+        "taxonomy_id": "02933112",
+        "taxonomy_name": "cabinet",
+        "test": [
+            "1a4d4980bbe2dcf24da5feafe6f1c8fc",
+            "1a1b62a38b2584874c62bee40dcdc539"
+        ],
+        "train": [
+            "1a2c199d7c8cb7f83d724fd1eb6db6b9",
+            "1a7b9b946e797ce59f8c3d2002c77ddb"
+        ],
+        "val": [
+            "1a4ff09890565843c59350d819542ec7"
+
+        ]
+    },
+    {
+        "taxonomy_id": "02958343",
+        "taxonomy_name": "car",
+        "test": [
+            "1a0bc9ab92c915167ae33d942430658c",
+            "1a4ef4a2a639f172f13d1237e1429e9e"
+            
+        ],
+        "train": [
+            "1a1dcd236a1e6133860800e6696b8284",
+            "1a3b35be7a0acb2d9f2366ce3e663402",
+            "1a6fca5e59b00eba250a73fdbcda6406",
+            "1a0c91c02ef35fbe68f60a737d94994a"
+            
+        ],
+        "val": [
+            "1a1de15e572e039df085b75b20c2db33",
+            "1a7b9697be903334b99755e16c4a9d21"
+        ]
+    }
+    
+]
