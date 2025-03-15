@@ -15,14 +15,15 @@ class Encoder(nn.Module):
             param.requires_grad = False
 
         self.features_dim = 768
+        self.middle_dim = 1024
         self.latent_space_size = 1024
         
         # Projection layer to match the decoder's expected input
         projection = nn.Sequential(
-            nn.Linear(self.features_dim, 768),
-            nn.BatchNorm1d(768),
+            nn.Linear(self.features_dim, self.middle_dim),
+            nn.BatchNorm1d(self.middle_dim),
             nn.LeakyReLU(0.2),
-            nn.Linear(768, self.latent_space_size),
+            nn.Linear(self.middle_dim, self.latent_space_size),
             nn.BatchNorm1d(self.latent_space_size),
             nn.LeakyReLU(0.2),
         )
