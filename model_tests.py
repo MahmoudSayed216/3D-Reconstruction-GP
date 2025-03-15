@@ -26,7 +26,6 @@ train_dataset.choose_images_indices_for_epoch()
 data_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
 
 
-
 model = DingDongNet(device="cpu", pretrained=False)
 print(sum(p.numel() for p in model.parameters()))
 

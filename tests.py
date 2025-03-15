@@ -49,9 +49,48 @@
 # visualize_from_file(path)
 
 
-def اطبع(رءم):
-    print(رءم)
+# def اطبع(رءم):
+#     print(رءم)
 
 
-تلاتة = 3
-اطبع(تلاتة)
+# تلاتة = 3
+# اطبع(تلاتة)
+
+
+
+# print([1]*10)
+
+
+# import cv2
+
+# cv2.cvtColor([], cv2.COLOR_BGR2RGB)
+
+
+
+# import torchvision.transforms as T
+
+
+# t = T.Compose([
+#     T.Resize(224),
+
+# ])
+
+
+# import random
+# lst1 = [1,2,3,4]
+# lst2 = [4,3,2,1]
+
+# both = list(zip(lst1, lst2))
+# random.shuffle(both)
+# lst1, lst2 = zip(*both)
+# print(lst1)
+# print(lst2)
+
+# from torchvision.models import mobilenet_v3_small
+
+
+
+import timm
+
+model = timm.create_model("convnext_large_in22k", pretrained=True)
+print(model)

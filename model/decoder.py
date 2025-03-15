@@ -1,7 +1,7 @@
 ## TODO: a function that takes a 2D tensor of size H,W and reshapes it into X,Y,Z s.t. X = Y = Z
 import torch
 import torch.nn as nn
-
+from utils.debugger import LOG
 
 
 class ConvTConv(nn.Module):
@@ -98,9 +98,10 @@ class Decoder(nn.Module):
 
             output = self.upsample5(lvl0_view_features)
             raw_feature = torch.cat([raw_features, output], dim=1)
-
+            LOG("1", None)
             gen_volumes.append(torch.squeeze(output, dim=1))
             raw_features.append(raw_feature)
+            LOG("2", None)
 
         gen_volumes = torch.stack(gen_volumes).permute(1, 0, 2, 3, 4).contiguous()
         raw_features = torch.stack(raw_features).permute(1, 0, 2, 3, 4, 5).contiguous()
