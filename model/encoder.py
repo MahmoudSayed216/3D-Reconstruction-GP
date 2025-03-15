@@ -103,18 +103,23 @@ class Encoder(nn.Module):
     def forward(self, v_imgs, r_imgs):
         r_imgs = r_imgs.permute(1, 0, 2, 3, 4).contiguous()
         v_imgs = v_imgs.permute(1, 0, 2, 3, 4).contiguous()
+        r_imgs = torch.split(r_imgs, 1, dim=0)
+        v_imgs = torch.split(v_imgs, 1, dim=0)
+
         level_3_features = []
         level_2_features = []
         level_1_features = []
         level_0_features = []
         vit_outputs = []
         for image in r_imgs:
+            image = image.squeeze(dim=0)
             lvl0, lvl1, lvl2, lvl3 = self.forward_cnn(image)
             level_0_features.append(lvl0)
             level_1_features.append(lvl1)
             level_2_features.append(lvl2)
             level_3_features.append(lvl3)
         for image in v_imgs:
+            image = image.squeeze(dim=0)
             v = self.forward_ViT(image)
             vit_outputs.append(v)
         

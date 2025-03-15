@@ -2,13 +2,15 @@ import torch
 import torch.nn as nn
 from model.encoder import Encoder
 from model.decoder import Decoder
+from model.merger import Merger
 
 
 class DingDongNet(nn.Module):
-    def __init__(self, device, pretrained=True):
+    def __init__(self, device, lrelu_factor,  pretrained=True):
         super(DingDongNet, self).__init__()
         self.encoder = Encoder(device, pretrained)
         self.decoder = Decoder()
+        self.merger = Merger(lrelu_factor)
 
     def forward(self, v_imgs, r_imgs):
         batch_size = v_imgs.shape[0]
@@ -25,4 +27,6 @@ class DingDongNet(nn.Module):
 
         # feading features to decoder
         raw, gen = self.decoder(lvl0_fms, lvl1_fms, lvl2_fms, base_input)
+
+        volume = self.merger(raw, gen)
 

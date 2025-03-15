@@ -1,4 +1,3 @@
-## TODO: a function that takes a 2D tensor of size H,W and reshapes it into X,Y,Z s.t. X = Y = Z
 import torch
 import torch.nn as nn
 from utils.debugger import LOG, DEBUG, DEBUGGER_SINGLETON
@@ -68,27 +67,33 @@ class Decoder(nn.Module):
         level_2 = level_2.permute(1, 0, 2, 3, 4).contiguous()
         level_1 = level_1.permute(1, 0, 2, 3, 4).contiguous()
         level_0 = level_0.permute(1, 0, 2, 3, 4).contiguous()
+
+        base_input = torch.split(base_input, 1, dim=0)
+        level_2 = torch.split(level_2, 1, dim=0)
+        level_1 = torch.split(level_1, 1, dim=0)
+        level_0 = torch.split(level_0, 1, dim=0)
+
         raw_features = []
         gen_volumes = []
         for i, fm in enumerate(base_input):
 
-            output = self.upsample1(fm)
+            output = self.upsample1(fm.squeeze(dim=0))
             output = self.upsample2(output)
 
-            lvl2_view_features = level_2[i]
+            lvl2_view_features = level_2[i].squeeze(dim=0)
             lvl2_view_features = self.reshape_feature_maps(lvl2_view_features, 14, 8)
             lvl2_view_features = self.concatenate_feature_maps(lvl2_view_features, output)
             output = self.upsample3(lvl2_view_features)
 
 
-            lvl1_view_features = level_1[i]
+            lvl1_view_features = level_1[i].squeeze(dim=0)
             lvl1_view_features = self.reshape_feature_maps(lvl1_view_features, 28, 16)
             lvl1_view_features = self.concatenate_feature_maps(lvl1_view_features, output)
             output = self.upsample4(lvl1_view_features)
             raw_feature = output
 
 
-            lvl0_view_features = level_0[i]
+            lvl0_view_features = level_0[i].squeeze(dim=0)
             lvl0_view_features = self.reshape_feature_maps(lvl0_view_features, 28, 32)
             lvl0_view_features = self.concatenate_feature_maps(lvl0_view_features, output)
             output = self.upsample5(lvl0_view_features)
@@ -101,5 +106,6 @@ class Decoder(nn.Module):
 
         gen_volumes = torch.stack(gen_volumes).permute(1, 0, 2, 3, 4).contiguous()
         raw_features = torch.stack(raw_features).permute(1, 0, 2, 3, 4, 5).contiguous()
-
+        DEBUG("gen volumes [coarse volumes] shape", gen_volumes.shape)
+        DEBUG("raw features shape", raw_features.shape)
         return raw_feature, gen_volumes
