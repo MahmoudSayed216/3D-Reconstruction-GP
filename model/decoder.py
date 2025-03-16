@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-from utils.debugger import LOG, DEBUG, DEBUGGER_SINGLETON
-DEBUGGER_SINGLETON.active =True
 
 
 class ConvTConv(nn.Module):
@@ -106,6 +104,4 @@ class Decoder(nn.Module):
 
         gen_volumes = torch.stack(gen_volumes).permute(1, 0, 2, 3, 4).contiguous()
         raw_features = torch.stack(raw_features).permute(1, 0, 2, 3, 4, 5).contiguous()
-        DEBUG("gen volumes [coarse volumes] shape", gen_volumes.shape)
-        DEBUG("raw features shape", raw_features.shape)
-        return raw_feature, gen_volumes
+        return raw_features, gen_volumes

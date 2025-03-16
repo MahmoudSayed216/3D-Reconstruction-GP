@@ -1,7 +1,16 @@
-parameters = 136148122
-number_of_bytes = 4
-byte_over_mb = 1/(1024**2)
+# this method is a very accurate but not an exact calculation
+from model import decoder, encoder, merger, refiner
+d = decoder.Decoder()
+e = encoder.Encoder("cpu", False)
+m = merger.Merger(0.2)
+r = refiner.Refiner(0.2, False)
 
-model_size = parameters*number_of_bytes*byte_over_mb
+sum_params = lambda M: sum(p.numel() for p in M.parameters()) 
 
-print(model_size)
+parameters = sum([sum_params(M) for M in [e, d, m, r]])
+
+
+size_in_mb = parameters>>18 
+
+
+print(size_in_mb)
