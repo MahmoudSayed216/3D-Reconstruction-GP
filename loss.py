@@ -22,7 +22,6 @@ class VoxelLoss(nn.Module):
         Returns:
             torch.Tensor: Loss value
         """
-        batch_size = pred.size(0)
         
         # Binary cross entropy loss
         bce_loss = nn.BCELoss()(pred, target)

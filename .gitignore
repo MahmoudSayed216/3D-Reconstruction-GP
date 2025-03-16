@@ -2,7 +2,7 @@ venv/
 .env/
 
 conda_env/
-
+output_dir/
 __pycache__/
 *.pyc
 *.pyo

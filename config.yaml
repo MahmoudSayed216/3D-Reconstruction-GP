@@ -7,20 +7,29 @@ dataset:
   # images_path: "ShapeNet Rendering"
   
 model:
-  ef_dim: 32
-  z_dim: 512
-  use_refiner: True
+  encoder:
+    vit_version: b
+    feature_dim:  768
+    middle_dim: 1024
+    latent_dim: 1024
+    freeze: True
+    pretrained: True
+  
+  lrelu_factor: 0.2
+  use_bias: False
+
 
 train:
-  batch_size: 16
+  batch_size: 5
   epochs: 10
   lr: 0.0001
   beta1: 0.9
   gamma: 0.5
   lr_milestones: [30, 60, 90]
-  print_every: 5
-  save_every: 5
-  output_dir: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/weights"
-  n_views_min: 15
+  print_every: 5 #IN MINI-BATCHES
+  save_weights_every: 5 #IN EPOCHS
+  output_dir: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/outputs"
+  n_view_const: 10
+  n_views_max: 15
   n_views_min: 6 
   

@@ -1,4 +1,4 @@
-from Model import AbdeinNet
+from Model import ALittleBitOfThisAndALittleBitOfThatNet
 from loss import VoxelLoss
 from Dataset import ShapeNet3DDataset
 # Training Loop and Loss Functions
@@ -19,7 +19,7 @@ from tensorboardX import SummaryWriter
 def train_pix2vox(cfg, train_dataloader, val_dataloader):
 
     # Create model
-    model = AbdeinNet(
+    model = ALittleBitOfThisAndALittleBitOfThatNet(
         ef_dim=cfg['model']['ef_dim'],
         z_dim=cfg['model']['z_dim'],
         use_refiner=cfg['model']['use_refiner'],
@@ -150,56 +150,67 @@ def train_pix2vox(cfg, train_dataloader, val_dataloader):
     print("Training completed!")
     writer.close()
 
+def initiate_environment(path: str):
+    count = 0
+    if os.path.isdir(path):
+        count = len(os.listdir(path))
+    else:
+        os.mkdir(os.path.join(path))
+    new_path = os.path.join(path, str(count))
+    os.mkdir(new_path)
+    
 
 
 # Main function to run training
 def main():
+    configs = None
     with open("config.yaml", "r") as f:
-        cfg = yaml.safe_load(f)
+        configs = yaml.safe_load(f)
 
+    initiate_environment(configs["train"]["output_dir"])
+
+#     # Create dataset and dataloader
+#     transform = transforms.Compose([
+#         transforms.Resize((224, 224)),
+#         transforms.ToTensor(),
+#         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # ImageNet normalization
+#     ])
     
-    # Create dataset and dataloader
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # ImageNet normalization
-    ])
+#     train_dataset = ShapeNet3DDataset(cfg["dataset"]["data_path"], cfg["dataset"]["config_path"], 'train', transform)
+
+#     # val_dataset = ShapeNetDataset(
+#     #     dataset_path=cfg['dataset']['val_path'],
+#     #     split='val',
+#     #     categories=cfg['dataset']['categories'],
+#     #     transforms=transform
+#     # )
     
-    train_dataset = ShapeNet3DDataset(cfg["dataset"]["data_path"], cfg["dataset"]["config_path"], 'train', transform)
+#     train_dataloader = DataLoader(
+#         dataset=train_dataset,
+#         batch_size=20,
+#         shuffle=True,
+#         # num_workers=cfg['train']['num_workers']
+#     )
 
-    # val_dataset = ShapeNetDataset(
-    #     dataset_path=cfg['dataset']['val_path'],
-    #     split='val',
-    #     categories=cfg['dataset']['categories'],
-    #     transforms=transform
-    # )
-    
-    train_dataloader = DataLoader(
-        dataset=train_dataset,
-        batch_size=20,
-        shuffle=True,
-        # num_workers=cfg['train']['num_workers']
-    )
+#     ##TODO: CALL THESE 2 NIGGAS AT THE END OF EACH EPOCH
+#     train_dataloader.dataset.set_n_views_rendering(10) ## 12 is a random number from lower bound 2 upper bound in config file
+#     train_dataloader.dataset.choose_images_indices_for_epoch()
+#     # images, model= train_dataset[0]
+#     start = time.time()
+#     iter = train_dataloader._get_iterator()
+#     i, m = iter._next_data()
+#     end = time.time()
+#     print(end-start)
+#     print(i.shape)
+#     print(m.shape)
+#     # val_dataloader = DataLoader(
+#     #     dataset=val_dataset,
+#     #     batch_size=cfg['train']['batch_size'],
+#     #     shuffle=False,
+#     #     num_workers=cfg['train']['num_workers']
+#     # )
 
-    ##TODO: CALL THESE 2 NIGGAS AT THE END OF EACH EPOCH
-    train_dataloader.dataset.set_n_views_rendering(10) ## 12 is a random number from lower bound 2 upper bound in config file
-    train_dataloader.dataset.choose_images_indices_for_epoch()
-    # images, model= train_dataset[0]
-    start = time.time()
-    iter = train_dataloader._get_iterator()
-    i, m = iter._next_data()
-    end = time.time()
-    print(end-start)
-    print(i.shape)
-    print(m.shape)
-    # val_dataloader = DataLoader(
-    #     dataset=val_dataset,
-    #     batch_size=cfg['train']['batch_size'],
-    #     shuffle=False,
-    #     num_workers=cfg['train']['num_workers']
-    # )
-
-    # train_pix2vox(cfg, train_dataloader, train_dataloader)
+#     # train_pix2vox(cfg, train_dataloader, train_dataloader)
 
 
 
@@ -214,13 +225,13 @@ if __name__ == "__main__":
 
 
 
-# train_transforms = utils.data_transforms.Compose([
-#     utils.data_transforms.RandomCrop(IMG_SIZE, CROP_SIZE),
-#     utils.data_transforms.RandomBackground(cfg.TRAIN.RANDOM_BG_COLOR_RANGE),
-#     utils.data_transforms.ColorJitter(cfg.TRAIN.BRIGHTNESS, cfg.TRAIN.CONTRAST, cfg.TRAIN.SATURATION),
-#     utils.data_transforms.RandomNoise(cfg.TRAIN.NOISE_STD),
-#     utils.data_transforms.Normalize(mean=cfg.DATASET.MEAN, std=cfg.DATASET.STD),
-#     utils.data_transforms.RandomFlip(),
-#     utils.data_transforms.RandomPermuteRGB(),
-#     utils.data_transforms.ToTensor(),
-# ])
+# # train_transforms = utils.data_transforms.Compose([
+# #     utils.data_transforms.RandomCrop(IMG_SIZE, CROP_SIZE),
+# #     utils.data_transforms.RandomBackground(cfg.TRAIN.RANDOM_BG_COLOR_RANGE),
+# #     utils.data_transforms.ColorJitter(cfg.TRAIN.BRIGHTNESS, cfg.TRAIN.CONTRAST, cfg.TRAIN.SATURATION),
+# #     utils.data_transforms.RandomNoise(cfg.TRAIN.NOISE_STD),
+# #     utils.data_transforms.Normalize(mean=cfg.DATASET.MEAN, std=cfg.DATASET.STD),
+# #     utils.data_transforms.RandomFlip(),
+# #     utils.data_transforms.RandomPermuteRGB(),
+# #     utils.data_transforms.ToTensor(),
+# # ])

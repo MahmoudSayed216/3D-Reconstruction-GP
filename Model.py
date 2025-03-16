@@ -6,14 +6,15 @@ from model.merger import Merger
 from model.refiner import Refiner
 
 
-class DingDongNet(nn.Module):
+class ALittleBitOfThisAndALittleBitOfThatNet(nn.Module):
     def __init__(self, device, lrelu_factor,  pretrained=True):
-        super(DingDongNet, self).__init__()
+        super(ALittleBitOfThisAndALittleBitOfThatNet, self).__init__()
         #TODO: involve config file
         self.encoder = Encoder(device, pretrained)
         self.decoder = Decoder()
         self.merger = Merger(lrelu_factor)
         self.refiner = Refiner(0.2, False)
+
     def forward(self, v_imgs, r_imgs):
         batch_size = v_imgs.shape[0]
         n_views = v_imgs.shape[1]
