@@ -1,20 +1,7 @@
-venv/
-.env/
-
 conda_env/
-output_dir/
+outputs/
 __pycache__/
-*.pyc
-*.pyo
 
 
-.ipynb_checkpoints/
 
-*.log
-*.tmp
-*.swp
-
-*.lock
-
-.vscode/
 
