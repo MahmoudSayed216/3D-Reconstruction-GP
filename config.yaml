@@ -14,6 +14,7 @@ model:
     latent_dim: 1024
     freeze: True
     pretrained: True
+    blender: False #implement this shi
   
   lrelu_factor: 0.2
   use_bias: False
@@ -21,8 +22,8 @@ model:
 
 train:
   batch_size: 5
-  epochs: 10
-  lr: 0.0001
+  epochs: 50
+  lr: 0.001
   beta1: 0.9
   gamma: 0.5
   lr_milestones: [30, 60, 90]
@@ -31,5 +32,12 @@ train:
   output_dir: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/outputs"
   n_view_const: 10
   n_views_max: 15
-  n_views_min: 6 
+  n_views_min: 6
+  optimizer: adam
+  start_using_refiner = 
   
+
+augmentation:
+  brightness: 0.4
+  saturation: 0.4
+  contrast: 0.4

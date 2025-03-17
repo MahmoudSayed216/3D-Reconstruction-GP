@@ -70,8 +70,6 @@ def train_pix2vox(cfg, train_dataloader, val_dataloader):
         start_time = time.time()
         
         for batch_idx, batch in enumerate(train_dataloader):
-            print(batch[0].shape)
-            print(batch[1].shape)
             imgs = batch[0].to(cfg['device'])  # [batch_size, n_views, C, H, W]
             voxels = batch[1].unsqueeze(1).to(cfg['device'])  # [batch_size, 1, D, H, W]
             
@@ -158,7 +156,7 @@ def initiate_environment(path: str):
         os.mkdir(os.path.join(path))
     new_path = os.path.join(path, str(count))
     os.mkdir(new_path)
-    
+
 
 
 # Main function to run training
@@ -168,7 +166,6 @@ def main():
         configs = yaml.safe_load(f)
 
     initiate_environment(configs["train"]["output_dir"])
-
 #     # Create dataset and dataloader
 #     transform = transforms.Compose([
 #         transforms.Resize((224, 224)),

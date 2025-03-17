@@ -93,13 +93,12 @@ class Encoder(nn.Module):
 
 
     def forward_ViT(self, img):
-        x = self.ViT(img)
-        # print("after vit: ", x.shape)
-        x = self.projection(x)
-        # print("after projection: ", x.shape)
-        return x
+        with torch.no_grad():  # Detach ViT output only, keeping projection trainable
+            vit_features = self.ViT(img)
 
-    
+        return self.projection(vit_features)  # Projection layer remains trainable
+
+        
     def forward(self, v_imgs, r_imgs):
         r_imgs = r_imgs.permute(1, 0, 2, 3, 4).contiguous()
         v_imgs = v_imgs.permute(1, 0, 2, 3, 4).contiguous()

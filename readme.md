@@ -11,4 +11,7 @@ improvements made to the original **Pix2Vox** architecture:
 - the outputs of these are then concatenated, reshaped and upsampled using a decoder module 
 - Introducing skip connections between the encoder and the decoder to perserve spatial features. So it looks more like a UNet now
     
-- Training the model hasn't started yet, development is in progress
+- Training the model hasn't started yet, development is in progress 
+- Expectations: 
+    - Worst case Scenario, the model will exhibit the features propagated from the encoder + the transformer, which will result in identical results to the original Pix2Vox model
+    - The model will benifit from the skip connections and the transformer's latent space and actually gain more accuracy
