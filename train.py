@@ -1,5 +1,5 @@
 # from Model import ALittleBitOfThisAndALittleBitOfThatNet
-from model import encoder, decoder, merger, refiner
+from model import encoder, decoder, merger, refiner, network_utils
 from metrics.loss import VoxelLoss
 from writer import Writer
 from Dataset import ShapeNet3DDataset
@@ -205,18 +205,27 @@ def train(configs):
     train_loader = DataLoader(dataset=train_dataset, batch_size=train_cfg["batch_size"], shuffle=True)
     test_loader = DataLoader(dataset=test_dataset)
 
-
-    Encoder = encoder.Encoder(pretrained=model_cfg["encoder"]["pretrained"]).to(configs["device"])
+    # Modules
+    Encoder = encoder.Encoder(configs=model_cfg).to(configs["device"])
     Decoder = decoder.Decoder().to(configs["device"])
     Merger = merger.Merger(model_cfg["lrelu_factor"]).to(configs["device"])
     Refiner = refiner.Refiner(model_cfg["lrelu_factor"], model_cfg["use_bias"]).to(configs["device"])
 
+    # Weights initialization [meaningless since BN is used]
+    Encoder.apply(network_utils.init_weights)
+    Decoder.apply(network_utils.init_weights)
+    Merger.apply(network_utils.init_weights)
+    Refiner.apply(network_utils.init_weights)
+
+    # Defining Optimizers
     E_optim = torch.optim.Adam(Encoder.parameters(), lr=train_cfg["lr"])
     D_optim = torch.optim.Adam(Decoder.parameters(), lr=train_cfg["lr"])
     M_optim = torch.optim.Adam(Merger.parameters(), lr=train_cfg["lr"])
     R_optim = torch.optim.Adam(Refiner.parameters(), lr=train_cfg["lr"])
 
-    loss_fn = VoxelLoss(weight=1) # cuz loss is always multiplied by 10 in original p2v impl
+
+    ## loss configs
+    loss_fn = VoxelLoss(weight=10) # cuz loss is always multiplied by 10 in original p2v impl
     best_val_loss = float('inf')
 
     batch_size = train_cfg["batch_size"]
@@ -235,7 +244,6 @@ def train(configs):
             D_optim.zero_grad()
             M_optim.zero_grad()
             R_optim.zero_grad()
-            
             v_img, r_img, gt_vol = batch
             
             #ENCODER
@@ -251,25 +259,27 @@ def train(configs):
             #MERGER
             if USE_MERGER:
                 gen_vol = Merger(raw, gen_vol)
+
             #REFINER
             if USE_REFINER:
                 gen_vol = Refiner(gen_vol)
 
             gen_vol = gen_vol.squeeze(dim=1)
 
-            loss = loss_fn(gt_vol, gen_vol)
+            loss = loss_fn(gen_vol, gt_vol)
 
             loss.backward()
 
-            if USE_MERGER:
-                M_optim.step()
-                
-            elif USE_REFINER:
-                R_optim.step()
-                M_optim.step()
 
             E_optim.step()
             D_optim.step()
+            if USE_MERGER:
+                LOG("MERGER STEP")
+                M_optim.step()
+                
+            if USE_REFINER:
+                LOG("REFINER STEP")
+                R_optim.step()
 
 
 
@@ -278,8 +288,10 @@ def train(configs):
 
         if epoch == train_cfg["epochs_till_merger"]:
             USE_MERGER = True
+            LOG("MERGER INITIATED")
         if epoch == train_cfg["epochs_till_refiner"]:
             USE_REFINER = True
+            LOG("REFINER INITIATED")
         
     writer.close()
     

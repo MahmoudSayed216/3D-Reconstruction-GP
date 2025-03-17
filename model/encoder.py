@@ -1,23 +1,26 @@
 import torch
 import torch.nn as nn
-from torchvision.models import ResNet50_Weights
+from torchvision.models import ResNet50_Weights, ViT_B_16_Weights
 from torchvision.models import resnet50, vit_b_16
+
 
 
 class Encoder(nn.Module):
 
-    def configure_vit(self, pretrained = True):
-        vit = vit_b_16(pretrained=False)
-
+    def configure_vit(self, configs):
+        if configs["encoder"]["pretrained"]:
+            vit = vit_b_16(weights=ViT_B_16_Weights.DEFAULT)
+        else:
+            vit = vit_b_16(weights = None)
         # vit = vit.to(device= "cuda:0" if self.device == "cuda" else "cpu")
         vit.heads = nn.Identity()
 
         for param in vit.parameters():
             param.requires_grad = False
 
-        self.features_dim = 768
-        self.middle_dim = 1024
-        self.latent_space_size = 1024
+        self.features_dim = configs["encoder"]["feature_dim"]
+        self.middle_dim = configs["encoder"]["middle_dim"]
+        self.latent_space_size = configs["encoder"]["latent_dim"]
         
         # Projection layer to match the decoder's expected input
         projection = nn.Sequential(
@@ -31,11 +34,11 @@ class Encoder(nn.Module):
         return vit, projection
     
 
-    def configure_resnet(self, pretrained = True):
-        if pretrained == True:
+    def configure_resnet(self, configs):
+        if configs["encoder"]["pretrained"] == True:
             resnet = resnet50(weights=ResNet50_Weights.DEFAULT)
         else:
-            resnet = resnet50(pretrained=False)
+            resnet = resnet50(weights=None)
         resnet = torch.nn.Sequential(*[
             resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool, resnet.layer1, resnet.layer2
         ])
@@ -45,10 +48,11 @@ class Encoder(nn.Module):
         return resnet
 
 
-    def __init__(self, pretrained=True):
+    def __init__(self, configs):
         super(Encoder, self).__init__()
-        self.ViT, self.projection = self.configure_vit(pretrained = pretrained)
-        self.ResNet = self.configure_resnet(pretrained = pretrained)
+        self.configs = configs
+        self.ViT, self.projection = self.configure_vit(configs=configs)
+        self.ResNet = self.configure_resnet(configs=configs)
        ## 1x1 conv to lower the number of params in the up projection
        ## resnet feature maps are probably unneeded 
         self.layer0 = nn.Sequential(*[

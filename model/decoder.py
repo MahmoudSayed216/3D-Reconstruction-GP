@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+from utils.debugger import DEBUG
 
 class ConvTConv(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -38,8 +38,12 @@ class Decoder(nn.Module):
         self.upsample4 = ConvTConv(in_channels=114, out_channels=8)
         ## after this, the size is:     8,32,32,32 -> level 0 (+) upsample4
         self.upsample5 = nn.Sequential(*[
-            nn.ConvTranspose3d(in_channels=57, out_channels=1, kernel_size=1),
-            nn.Sigmoid()
+            nn.Conv3d(in_channels=57, out_channels=32, kernel_size=3, padding=1),
+            nn.BatchNorm3d(num_features=32),
+            nn.ReLU(),
+            nn.ConvTranspose3d(in_channels=32, out_channels=1, kernel_size=1),
+            # nn.BatchNorm3d(1),
+            nn.Sigmoid(),
         ])
         
 
@@ -89,7 +93,6 @@ class Decoder(nn.Module):
             lvl1_view_features = self.concatenate_feature_maps(lvl1_view_features, output)
             output = self.upsample4(lvl1_view_features)
             raw_feature = output
-
 
             lvl0_view_features = level_0[i].squeeze(dim=0)
             lvl0_view_features = self.reshape_feature_maps(lvl0_view_features, 28, 32)
