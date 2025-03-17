@@ -3,10 +3,11 @@ from model import decoder, encoder, merger, refiner
 import yaml
 
 configs = None
-with open("/kaggle/working/3D-Reconstruction-GP/config.yaml", "r") as f:
+with open("config.yaml", "r") as f:
     configs = yaml.safe_load(f)
 
 model_cfg = configs["model"]
+print(model_cfg)
 Encoder = encoder.Encoder(configs=model_cfg).to(configs["device"])
 Decoder = decoder.Decoder().to(configs["device"])
 Merger = merger.Merger(model_cfg["lrelu_factor"]).to(configs["device"])
