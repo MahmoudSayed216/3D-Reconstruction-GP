@@ -11,8 +11,8 @@ transformations = T.Compose([
     T.RandomRotation(degrees=15),
     T.RandomApply([T.Lambda(lambda x: x + 0.1 * torch.randn_like(x))], p=0.2),
     T.Lambda(lambda x: torch.clamp(x, 0.0, 1.0)),
-    T.ToTensor(),
-    T.ColorJitter()
+    T.ColorJitter(),
+    T.ToTensor()
 ])
 
 

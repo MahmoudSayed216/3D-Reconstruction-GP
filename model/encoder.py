@@ -8,7 +8,7 @@ class Encoder(nn.Module):
     def configure_vit(self, pretrained = True):
         vit = vit_b_16(pretrained=False)
 
-        vit = vit.to(device= "cuda:0" if self.device == "cuda" else "cpu")
+        # vit = vit.to(device= "cuda:0" if self.device == "cuda" else "cpu")
         vit.heads = nn.Identity()
 
         for param in vit.parameters():
@@ -37,14 +37,12 @@ class Encoder(nn.Module):
         ])
         for param in resnet.parameters():
             param.requires_grad = False
-        resnet = resnet.to(device= "cuda:1" if self.device == "cuda" else "cpu")
-
+        # resnet = resnet.to(device= "cuda:1" if self.device == "cuda" else "cpu")
         return resnet
 
 
-    def __init__(self, device, pretrained=True):
+    def __init__(self, pretrained=True):
         super(Encoder, self).__init__()
-        self.device = device
         self.ViT, self.projection = self.configure_vit(pretrained = pretrained)
         self.ResNet = self.configure_resnet(pretrained = pretrained)
        ## 1x1 conv to lower the number of params in the up projection
@@ -73,8 +71,7 @@ class Encoder(nn.Module):
             torch.nn.MaxPool2d(kernel_size=2)
         ])
 
-
-
+    
 
     def forward_cnn(self, img):
         # print("original input size: ",img.shape)
@@ -93,12 +90,13 @@ class Encoder(nn.Module):
 
 
     def forward_ViT(self, img):
-        with torch.no_grad():  # Detach ViT output only, keeping projection trainable
-            vit_features = self.ViT(img)
+        x = self.ViT(img)
+        # print("after vit: ", x.shape)
+        x = self.projection(x)
+        # print("after projection: ", x.shape)
+        return x
 
-        return self.projection(vit_features)  # Projection layer remains trainable
-
-        
+    
     def forward(self, v_imgs, r_imgs):
         r_imgs = r_imgs.permute(1, 0, 2, 3, 4).contiguous()
         v_imgs = v_imgs.permute(1, 0, 2, 3, 4).contiguous()

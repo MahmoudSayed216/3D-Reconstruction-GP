@@ -14,3 +14,18 @@ size_in_mb = parameters>>18
 
 
 print(size_in_mb)
+
+
+
+
+## INFO TO BE ADDED TO THE PRESENTATION
+import torchinfo
+import torch
+from Model import ALittleBitOfThisAndALittleBitOfThatNet
+
+
+
+model = ALittleBitOfThisAndALittleBitOfThatNet("cpu", 0.2, False)
+
+torchinfo.summary(model, input_data=(torch.randn(1, 5, 3, 224, 224), torch.randn(1, 5, 3, 224, 224)))
+

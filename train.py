@@ -1,7 +1,7 @@
-from Model import ALittleBitOfThisAndALittleBitOfThatNet
+# from Model import ALittleBitOfThisAndALittleBitOfThatNet
+from model import encoder, decoder, merger, refiner
 from loss import VoxelLoss
 from Dataset import ShapeNet3DDataset
-# Training Loop and Loss Functions
 import yaml
 import torch
 import torch.nn as nn
@@ -13,6 +13,7 @@ import os
 import time
 import numpy as np
 from tensorboardX import SummaryWriter
+import torchvision.transforms as T
 
 ## TODO: build a weight loading method to make it easier to trian on a different account without Fing up the code
 
@@ -148,7 +149,9 @@ def train_pix2vox(cfg, train_dataloader, val_dataloader):
     print("Training completed!")
     writer.close()
 
-def initiate_environment(path: str):
+
+
+def initiate_training_environment(path: str):
     count = 0
     if os.path.isdir(path):
         count = len(os.listdir(path))
@@ -156,6 +159,59 @@ def initiate_environment(path: str):
         os.mkdir(os.path.join(path))
     new_path = os.path.join(path, str(count))
     os.mkdir(new_path)
+
+    return new_path
+
+
+def train(configs):
+    train_cfg = configs["train"]
+    augmentation_cfg = configs["augmentation"]
+    model_cfg = configs["model"]
+    dataset_cfg = configs["dataset"]
+
+    train_transformations = T.Compose([
+        T.RandomResizedCrop(224),
+        T.RandomHorizontalFlip(),
+        T.RandomRotation(degrees=15),
+        T.RandomApply([T.Lambda(lambda x: x + 0.1 * torch.randn_like(x))], p=0.2),
+        T.Lambda(lambda x: torch.clamp(x, 0.0, 255.0)),
+        T.ColorJitter(brightness=augmentation_cfg["brightness"],
+                      contrast=augmentation_cfg["contrast"],
+                      saturation=augmentation_cfg["saturation"]),
+        T.ToTensor()
+    ])
+    test_transformations = T.Compose([
+        T.Resize(224),
+        T.ToTensor()
+    ])
+
+    train_dataset = ShapeNet3DDataset(dataset_path=dataset_cfg["data_path"],
+                                      json_file_path=dataset_cfg["json_mapper"],
+                                      split='train',
+                                      transforms=train_transformations)
+    
+    test_dataset = ShapeNet3DDataset(dataset_path=dataset_cfg["data_path"],
+                                      json_file_path=dataset_cfg["json_mapper"],
+                                      split='test',
+                                      transforms=test_transformations)
+    
+
+    train_loader = DataLoader(dataset=train_dataset, batch_size=train_cfg["batch_size"], shuffle=True)
+    test_loader = DataLoader(dataset=test_dataset)
+
+
+    Encoder = encoder.Encoder(pretrained=model_cfg["encoder"]["pretrained"]).to(configs["device"])
+    Decoder = decoder.Decoder().to(configs["device"])
+    Merger = merger.Merger(model_cfg["lrelu_factor"]).to(configs["device"])
+    Refiner = refiner.Refiner(model_cfg["lrelu_factor"], model_cfg["use_bias"]).to(configs["device"])
+
+    E_optim = torch.optim.Adam(Encoder.parameters(), lr=train_cfg["lr"])
+    D_optim = torch.optim.Adam(Decoder.parameters(), lr=train_cfg["lr"])
+    M_optim = torch.optim.Adam(Merger.parameters(), lr=train_cfg["lr"])
+    R_optim = torch.optim.Adam(Refiner.parameters(), lr=train_cfg["lr"])
+
+    for epoch in range(train_cfg["epochs"]):
+        pass
 
 
 
@@ -165,50 +221,13 @@ def main():
     with open("config.yaml", "r") as f:
         configs = yaml.safe_load(f)
 
-    initiate_environment(configs["train"]["output_dir"])
-#     # Create dataset and dataloader
-#     transform = transforms.Compose([
-#         transforms.Resize((224, 224)),
-#         transforms.ToTensor(),
-#         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # ImageNet normalization
-#     ])
-    
-#     train_dataset = ShapeNet3DDataset(cfg["dataset"]["data_path"], cfg["dataset"]["config_path"], 'train', transform)
-
-#     # val_dataset = ShapeNetDataset(
-#     #     dataset_path=cfg['dataset']['val_path'],
-#     #     split='val',
-#     #     categories=cfg['dataset']['categories'],
-#     #     transforms=transform
-#     # )
-    
-#     train_dataloader = DataLoader(
-#         dataset=train_dataset,
-#         batch_size=20,
-#         shuffle=True,
-#         # num_workers=cfg['train']['num_workers']
-#     )
-
+    train_path = initiate_training_environment(configs["train"]["output_dir"])
+    configs["train_path"] = train_path
 #     ##TODO: CALL THESE 2 NIGGAS AT THE END OF EACH EPOCH
 #     train_dataloader.dataset.set_n_views_rendering(10) ## 12 is a random number from lower bound 2 upper bound in config file
 #     train_dataloader.dataset.choose_images_indices_for_epoch()
-#     # images, model= train_dataset[0]
-#     start = time.time()
-#     iter = train_dataloader._get_iterator()
-#     i, m = iter._next_data()
-#     end = time.time()
-#     print(end-start)
-#     print(i.shape)
-#     print(m.shape)
-#     # val_dataloader = DataLoader(
-#     #     dataset=val_dataset,
-#     #     batch_size=cfg['train']['batch_size'],
-#     #     shuffle=False,
-#     #     num_workers=cfg['train']['num_workers']
-#     # )
-
 #     # train_pix2vox(cfg, train_dataloader, train_dataloader)
-
+    train(configs=configs)
 
 
 
@@ -220,15 +239,3 @@ if __name__ == "__main__":
 
 
 
-
-
-# # train_transforms = utils.data_transforms.Compose([
-# #     utils.data_transforms.RandomCrop(IMG_SIZE, CROP_SIZE),
-# #     utils.data_transforms.RandomBackground(cfg.TRAIN.RANDOM_BG_COLOR_RANGE),
-# #     utils.data_transforms.ColorJitter(cfg.TRAIN.BRIGHTNESS, cfg.TRAIN.CONTRAST, cfg.TRAIN.SATURATION),
-# #     utils.data_transforms.RandomNoise(cfg.TRAIN.NOISE_STD),
-# #     utils.data_transforms.Normalize(mean=cfg.DATASET.MEAN, std=cfg.DATASET.STD),
-# #     utils.data_transforms.RandomFlip(),
-# #     utils.data_transforms.RandomPermuteRGB(),
-# #     utils.data_transforms.ToTensor(),
-# # ])

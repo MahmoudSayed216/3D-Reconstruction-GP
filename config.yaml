@@ -1,11 +1,10 @@
 device: cpu
 dataset: 
-  config_path: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/dataset mapper/ShapeNet3DClone.json"
+  json_mapper: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/dataset mapper/ShapeNet3DClone.json"
   data_path: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Data/Experimental/" 
   n_classes: 4
-  # voxels_path: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Data/ShapeNetVox32"
-  # images_path: "ShapeNet Rendering"
-  
+
+
 model:
   encoder:
     vit_version: b
@@ -13,7 +12,7 @@ model:
     middle_dim: 1024
     latent_dim: 1024
     freeze: True
-    pretrained: True
+    pretrained: False
     blender: False #implement this shi
   
   lrelu_factor: 0.2
@@ -22,7 +21,7 @@ model:
 
 train:
   batch_size: 5
-  epochs: 50
+  epochs: 200
   lr: 0.001
   beta1: 0.9
   gamma: 0.5
@@ -34,7 +33,8 @@ train:
   n_views_max: 15
   n_views_min: 6
   optimizer: adam
-  start_using_refiner = 
+  epochs_till_merger: 100
+  epochs_till_refiner: 130
   
 
 augmentation:
