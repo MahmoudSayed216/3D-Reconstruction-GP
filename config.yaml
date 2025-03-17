@@ -1,4 +1,5 @@
 device: cpu
+use_debugger: True
 dataset: 
   json_mapper: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/dataset mapper/ShapeNet3DClone.json"
   data_path: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Data/Experimental/" 
@@ -22,11 +23,11 @@ model:
 train:
   batch_size: 5
   epochs: 200
-  lr: 0.001
+  lr: 0.0001
   beta1: 0.9
   gamma: 0.5
   lr_milestones: [30, 60, 90]
-  print_every: 5 #IN MINI-BATCHES
+  print_every: 50 #IN MINI-BATCHES
   save_weights_every: 5 #IN EPOCHS
   output_dir: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/outputs"
   n_view_const: 10

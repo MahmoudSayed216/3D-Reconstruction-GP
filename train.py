@@ -1,20 +1,20 @@
 # from Model import ALittleBitOfThisAndALittleBitOfThatNet
 from model import encoder, decoder, merger, refiner
-from loss import VoxelLoss
+from metrics.loss import VoxelLoss
+from writer import Writer
 from Dataset import ShapeNet3DDataset
 import yaml
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from torchvision import transforms
 from datetime import datetime
 import os
 import time
-import numpy as np
-from tensorboardX import SummaryWriter
 import torchvision.transforms as T
+from utils.debugger import DEBUG, LOG, DEBUGGER_SINGLETON
 
+
+## TODO: log losses and IoUs at 50
 ## TODO: build a weight loading method to make it easier to trian on a different account without Fing up the code
 
 def train_pix2vox(cfg, train_dataloader, val_dataloader):
@@ -30,9 +30,6 @@ def train_pix2vox(cfg, train_dataloader, val_dataloader):
     # Set up loss functions
     voxel_loss = VoxelLoss(weight=1.0).to(cfg['device'])
     
-    # TODO: SET UP THE OPTIMIZERS IN A BETTER WAY
-    # Set up optimizer
-    # Don't include encoder in the parameter list if it's frozen
     if model.encoder.vit.parameters().__next__().requires_grad:
         params = model.parameters()
     else:
@@ -152,18 +149,23 @@ def train_pix2vox(cfg, train_dataloader, val_dataloader):
 
 
 def initiate_training_environment(path: str):
-    count = 0
-    if os.path.isdir(path):
-        count = len(os.listdir(path))
-    else:
+    if not os.path.exists(path):
         os.mkdir(os.path.join(path))
-    new_path = os.path.join(path, str(count))
+    new_path = os.path.join(path, datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
     os.mkdir(new_path)
 
     return new_path
 
 
 def train(configs):
+
+    ## TODO: forward pass
+    ## TODO: use modules gradually
+    ## TODO: save weights every N epochs
+    ## TODO: save weights when loss decreases under best loss
+    ## TODO: log every [batch_idx condition]
+
+    writer = Writer(configs["train_path"])
     train_cfg = configs["train"]
     augmentation_cfg = configs["augmentation"]
     model_cfg = configs["model"]
@@ -173,12 +175,12 @@ def train(configs):
         T.RandomResizedCrop(224),
         T.RandomHorizontalFlip(),
         T.RandomRotation(degrees=15),
+        T.ToTensor(),
         T.RandomApply([T.Lambda(lambda x: x + 0.1 * torch.randn_like(x))], p=0.2),
         T.Lambda(lambda x: torch.clamp(x, 0.0, 255.0)),
         T.ColorJitter(brightness=augmentation_cfg["brightness"],
                       contrast=augmentation_cfg["contrast"],
                       saturation=augmentation_cfg["saturation"]),
-        T.ToTensor()
     ])
     test_transformations = T.Compose([
         T.Resize(224),
@@ -189,11 +191,15 @@ def train(configs):
                                       json_file_path=dataset_cfg["json_mapper"],
                                       split='train',
                                       transforms=train_transformations)
-    
+    train_dataset.set_n_views_rendering(1)
+    train_dataset.choose_images_indices_for_epoch()
     test_dataset = ShapeNet3DDataset(dataset_path=dataset_cfg["data_path"],
                                       json_file_path=dataset_cfg["json_mapper"],
                                       split='test',
                                       transforms=test_transformations)
+    test_dataset.set_n_views_rendering(1)
+    test_dataset.choose_images_indices_for_epoch()
+
     
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=train_cfg["batch_size"], shuffle=True)
@@ -210,16 +216,86 @@ def train(configs):
     M_optim = torch.optim.Adam(Merger.parameters(), lr=train_cfg["lr"])
     R_optim = torch.optim.Adam(Refiner.parameters(), lr=train_cfg["lr"])
 
+    loss_fn = VoxelLoss(weight=1) # cuz loss is always multiplied by 10 in original p2v impl
+    best_val_loss = float('inf')
+
+    batch_size = train_cfg["batch_size"]
+    n_views = 1
+    USE_MERGER = train_cfg["epochs_till_merger"] == 0
+    USE_REFINER = train_cfg["epochs_till_refiner"] == 0
+
     for epoch in range(train_cfg["epochs"]):
-        pass
+        Encoder.train()
+        Decoder.train()
+        Merger.train()
+        Refiner.train()
+
+        for batch_idx, batch in enumerate(train_loader):
+            E_optim.zero_grad()
+            D_optim.zero_grad()
+            M_optim.zero_grad()
+            R_optim.zero_grad()
+            
+            v_img, r_img, gt_vol = batch
+            
+            #ENCODER
+            lvl0, lvl1, lvl2, lvl3, latent_space = Encoder(v_img, r_img)
+
+            #DECODER
+            latent_space = latent_space.view(batch_size, n_views, 128, 2,2,2)
+            lvl3 = lvl3.view(batch_size, n_views, 1568, 2, 2, 2)
+            base_input = torch.cat([lvl3, latent_space], dim=2)
+            raw, gen_vol = Decoder(lvl0, lvl1, lvl2, base_input)
+
+
+            #MERGER
+            if USE_MERGER:
+                gen_vol = Merger(raw, gen_vol)
+            #REFINER
+            if USE_REFINER:
+                gen_vol = Refiner(gen_vol)
+
+            gen_vol = gen_vol.squeeze(dim=1)
+
+            loss = loss_fn(gt_vol, gen_vol)
+
+            loss.backward()
+
+            if USE_MERGER:
+                M_optim.step()
+                
+            elif USE_REFINER:
+                R_optim.step()
+                M_optim.step()
+
+            E_optim.step()
+            D_optim.step()
 
 
 
-# Main function to run training
+                
+            print(loss.item())
+
+        if epoch == train_cfg["epochs_till_merger"]:
+            USE_MERGER = True
+        if epoch == train_cfg["epochs_till_refiner"]:
+            USE_REFINER = True
+        
+    writer.close()
+    
+
+
+
+
+
+
+
+
 def main():
     configs = None
     with open("config.yaml", "r") as f:
         configs = yaml.safe_load(f)
+    DEBUGGER_SINGLETON.active = configs["use_debugger"]
 
     train_path = initiate_training_environment(configs["train"]["output_dir"])
     configs["train_path"] = train_path

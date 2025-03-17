@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torchvision.models import ResNet50_Weights
 from torchvision.models import resnet50, vit_b_16
 
 
@@ -31,7 +32,10 @@ class Encoder(nn.Module):
     
 
     def configure_resnet(self, pretrained = True):
-        resnet = resnet50(pretrained=True)
+        if pretrained == True:
+            resnet = resnet50(weights=ResNet50_Weights.DEFAULT)
+        else:
+            resnet = resnet50(pretrained=False)
         resnet = torch.nn.Sequential(*[
             resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool, resnet.layer1, resnet.layer2
         ])
@@ -48,6 +52,7 @@ class Encoder(nn.Module):
        ## 1x1 conv to lower the number of params in the up projection
        ## resnet feature maps are probably unneeded 
         self.layer0 = nn.Sequential(*[
+            nn.BatchNorm2d(512),
             nn.Conv2d(in_channels=512, out_channels=2048, kernel_size=1, stride=1),
             nn.BatchNorm2d(2048),
             nn.ReLU()
@@ -71,29 +76,21 @@ class Encoder(nn.Module):
             torch.nn.MaxPool2d(kernel_size=2)
         ])
 
-    
+
 
     def forward_cnn(self, img):
-        # print("original input size: ",img.shape)
         x = self.ResNet(img)
-        # print("after resnet: ", x.shape)
         lvl0 = self.layer0(x)
-        # print("after layer 0: ", x.shape)
         lvl1 = self.layer1(lvl0)
-        # print("after layer 1: ", x.shape)
         lvl2 = self.layer2(lvl1)
-        # print("after layer 2: ", x.shape)
         lvl3 = self.layer3(lvl2)
-        # print("after layer 3: ", x.shape)
         return lvl0, lvl1, lvl2, lvl3
 
 
 
     def forward_ViT(self, img):
         x = self.ViT(img)
-        # print("after vit: ", x.shape)
         x = self.projection(x)
-        # print("after projection: ", x.shape)
         return x
 
     
@@ -126,11 +123,5 @@ class Encoder(nn.Module):
         level_3_features = torch.stack(level_3_features).permute(1, 0, 2, 3, 4).contiguous()
         vit_outputs = torch.stack(vit_outputs).permute(1, 0, 2)
 
-        print(level_0_features.shape)
-        print(level_1_features.shape)
-        print(level_2_features.shape)
-        print(level_3_features.shape)
-        print(vit_outputs.shape)
-        print("____")
 
         return level_0_features, level_1_features, level_2_features, level_3_features, vit_outputs

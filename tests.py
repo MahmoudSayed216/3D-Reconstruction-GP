@@ -37,15 +37,15 @@
 # print(f"Total testing FLOPs: {e_flops.total()/(2*1e9):.2f} GFLOPs")  # Convert to GFLOPs (billion FLOPs)
 
 
-import torchinfo
-import torch
-from Model import ALittleBitOfThisAndALittleBitOfThatNet
+# import torchinfo
+# import torch
+# from Model import ALittleBitOfThisAndALittleBitOfThatNet
 
 
 
-model = ALittleBitOfThisAndALittleBitOfThatNet("cpu", 0.2, False)
+# model = ALittleBitOfThisAndALittleBitOfThatNet("cpu", 0.2, False)
 
-torchinfo.summary(model, input_data=(torch.randn(1, 5, 3, 224, 224), torch.randn(1, 5, 3, 224, 224)))
+# torchinfo.summary(model, input_data=(torch.randn(1, 5, 3, 224, 224), torch.randn(1, 5, 3, 224, 224)))
 
 
 # Total params: 171,046,351
@@ -67,3 +67,20 @@ torchinfo.summary(model, input_data=(torch.randn(1, 5, 3, 224, 224), torch.randn
 # Forward/backward pass size (MB): 3083.48
 # Params size (MB): 570.18
 # Estimated Total Size (MB): 3665.71
+
+
+# from tensorboard import program
+
+# log_dir = "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/outputs/2025-03-17_06-01-50/events.out.tfevents.1742184110.Aspire-A514"  # Adjust to your log directory
+# tb = program.TensorBoard()
+# tb.configure(argv=[None, '--logdir', log_dir])
+# tb.launch()
+
+
+import mlflow
+
+mlflow.start_run()
+
+mlflow.log_param("learning_rate", 0.001)
+mlflow.log_metric("loss", 0.45)
+mlflow.end_run()
