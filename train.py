@@ -69,7 +69,7 @@ def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_f
     IOU_50 = []
     IOU_75 = []
     with torch.no_grad():
-        with autocast(dtype=torch.float32):
+        with autocast():
             for batch_idx, batch in enumerate(loader):
                 r_img, v_img, gt_vol = batch
                 #ENCODER
@@ -234,7 +234,7 @@ def train(configs):
             R_optim.zero_grad()
             v_img, r_img, gt_vol = batch
             
-            with autocast(dtype=torch.float32):
+            with autocast():
                 #ENCODER
                 lvl0, lvl1, lvl2, lvl3, latent_space = Encoder(v_img, r_img)
                 
@@ -332,7 +332,7 @@ def train(configs):
 
 def main():
     configs = None
-    with open("config.yaml", "r") as f:
+    with open("/kaggle/working/3D-Reconstruction-GP/config.yaml", "r") as f:
         configs = yaml.safe_load(f)
     DEBUGGER_SINGLETON.active = configs["use_debugger"]
 
