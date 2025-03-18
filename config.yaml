@@ -23,24 +23,23 @@ model:
 
 train:
   batch_size: 3
-  epochs: 100
-  epochs_till_merger: 0
-  epochs_till_refiner: 0
+  epochs: 10
+  epochs_till_merger: 3
+  epochs_till_refiner: 250
   lr: 0.001
   reduce_lr_epochs: 150
   reduce_lr_factor: 0.5
   start_epoch: 0
   beta1: 0.9
   gamma: 0.5
-  lr_milestones: [30, 60, 90]
   print_every: 50 #IN MINI-BATCHES
-  save_every: 5 #IN EPOCHS
+  save_every: 1 #IN EPOCHS
   output_dir: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/outputs"
   n_view_const: 10
   n_views_max: 15
   n_views_min: 6
   optimizer: adam
-  
+  load_from_pretrained: False
 
 augmentation:
   brightness: 0.4

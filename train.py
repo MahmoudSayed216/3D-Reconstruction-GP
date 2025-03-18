@@ -39,13 +39,11 @@ def gaussian_random(low=1, high=12):
 
 
 
-def update_dataset_configs(loader, multi_view, n_views=0):
+def update_dataset_configs(loader, multi_view):
     random_value = 1 # gets updated only if multi_view
-    if multi_view and n_views == 0:
+    if multi_view:
         random_value = gaussian_random(1, 12)
-        loader.dataset.set_n_views_rendering(random_value)
-    else:
-        loader.dataset.set_n_views_rendering(n_views)
+    loader.dataset.set_n_views_rendering(random_value)
         
     loader.dataset.choose_images_indices_for_epoch()
     return random_value
@@ -84,10 +82,11 @@ def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_f
                 #MERGER
                 if USE_MERGER:
                     gen_vol = Merger(raw, gen_vol)
-
+                else:
+                    gen_vol = gen_vol.squeeze(dim = 1)
                 #REFINER
-                if USE_REFINER:
-                    gen_vol = Refiner(gen_vol)
+                # if USE_REFINER:
+                gen_vol = Refiner(gen_vol)
 
                 gen_vol = gen_vol.squeeze(dim=1)
 
@@ -211,15 +210,15 @@ def train(configs):
     EPOCHS = train_cfg["epochs"]
     ITERATIONS_PER_EPOCH = int(len(train_dataset)/BATCH_SIZE)
     START_EPOCH = train_cfg["start_epoch"]
-
+    drawing_counter = 0
     for epoch in range(START_EPOCH, EPOCHS):
         LOG("EPOCH", epoch+1)
         if epoch == train_cfg["epochs_till_merger"]:
             writer.add_line("MERGER WILL NOW BE USED")
             USE_MERGER = True
-        if epoch == train_cfg["epochs_till_refiner"]:
-            writer.add_line("REFINER WILL NOW BE USED")
-            USE_REFINER = True
+        # if epoch == train_cfg["epochs_till_refiner"]:
+            # writer.add_line("REFINER WILL NOW BE USED")
+            # USE_REFINER = True
         
         
         Encoder.train()
@@ -235,7 +234,6 @@ def train(configs):
             R_optim.zero_grad()
             v_img, r_img, gt_vol = batch
             
-
             with autocast(dtype=torch.float32):
                 #ENCODER
                 lvl0, lvl1, lvl2, lvl3, latent_space = Encoder(v_img, r_img)
@@ -243,14 +241,14 @@ def train(configs):
                 #DECODER
                 base_input = merge_feature_maps(BATCH_SIZE, n_views, lvl3, latent_space)
                 raw, gen_vol = Decoder(lvl0, lvl1, lvl2, base_input)
-                
+                DEBUG("gen vol shape", gen_vol.shape)
                 #MERGER
                 if USE_MERGER:
                     gen_vol = Merger(raw, gen_vol)
-
+                else:
+                    gen_vol = gen_vol.squeeze(dim=1)
                 #REFINER
-                if USE_REFINER:
-                    gen_vol = Refiner(gen_vol)
+                gen_vol = Refiner(gen_vol)
 
                 gen_vol = gen_vol.squeeze(dim=1)
 
@@ -264,12 +262,11 @@ def train(configs):
             if USE_MERGER:
                 scaler.step(M_optim)
                 
-            if USE_REFINER:
-                scaler.step(R_optim)
+            # if USE_REFINER:
+            scaler.step(R_optim)
 
             scaler.update()
             ##TODO: DRAW SOME SHAPES EVERY WHILE
-            LOG("loss", loss.item())
 
         mean_loss = TRAIN_LOSS_ACCUMULATOR/ITERATIONS_PER_EPOCH
 
@@ -280,15 +277,16 @@ def train(configs):
 
         if mean_iou > best_val_iou:
             best_val_iou = mean_iou
-            
+            drawing_counter+=1
             LOG(f"IoU has scored a higher value at epoch {epoch+1}. Saving Weights...")
             writer.add_line(f"IoU has scored a higher value at epoch {epoch+1}. Saving Weights...")
 
             weights_path = os.path.join(configs["train_path"], "weights", "best.pth")
             network_utils.save_checkpoints(weights_path, epoch+1, Encoder, E_optim, Decoder, D_optim, Refiner, R_optim , Merger,  M_optim, mean_iou, epoch+1)
-            
-            samples_path = os.path.join(configs["train_path"], "samples", f"output{epoch+1}.pth")
-            torch.save(gen_vol, samples_path)
+            if drawing_counter == train_cfg["save_every"]:
+                drawing_counter = 0
+                samples_path = os.path.join(configs["train_path"], "samples", f"output{epoch+1}.pth")
+                torch.save(gen_vol, samples_path)
 
             LOG("tensor saved")
 
@@ -319,7 +317,8 @@ def train(configs):
         writer.add_scaler("Mean IoU", epoch+1, mean_iou)
 
         n_views = update_dataset_configs(train_loader, USE_MERGER)
-        update_dataset_configs(test_loader, USE_MERGER, n_views)
+        test_loader.dataset.set_n_views_rendering(n_views)
+        test_loader.dataset.choose_images_indices_for_epoch()
 
     writer.close()
 
