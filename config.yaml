@@ -2,8 +2,8 @@ device: cpu
 use_debugger: True
 thresholds: [0.4, 0.5, 0.75]
 dataset: 
-  json_mapper: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/dataset mapper/ShapeNet3DClone.json"
-  data_path: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Data/Experimental/" 
+  json_mapper: "/kaggle/working/3D-Reconstruction-GP/dataset mapper/ShapeNet.json"
+  data_path: "/kaggle/input/shapenet" 
   n_classes: 4
 
 
@@ -34,7 +34,7 @@ train:
   gamma: 0.5
   print_every: 50 #IN MINI-BATCHES
   save_every: 1 #IN EPOCHS
-  output_dir: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/outputs"
+  output_dir: "/kaggle/working/"
   n_view_const: 10
   n_views_max: 15
   n_views_min: 6
