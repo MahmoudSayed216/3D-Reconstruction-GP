@@ -18,6 +18,8 @@ class ShapeNet3DDataset(Dataset):
         self.json_file_path = json_file_path
         self.split = split
         self.transform = transforms
+        self.different_views_per_model = 24
+        self.list_of_24 = list(range(24))
         with open(json_file_path, 'r') as file: json_file = json.load(file)
 
         self.data = []
@@ -41,7 +43,7 @@ class ShapeNet3DDataset(Dataset):
         self.n_views_rendering = n_views_rendering
 
     def choose_images_indices_for_epoch(self):
-        self.random_indices = random.sample([i for i in range(24)], self.n_views_rendering)
+        self.random_indices = random.sample(self.list_of_24, self.n_views_rendering)
             
 
 
@@ -50,22 +52,21 @@ class ShapeNet3DDataset(Dataset):
         cls = self.classes[class_idx]
         images_base = os.path.join(self.dataset_path, "ShapeNetRendering/ShapeNetRendering",cls, current)
         images_paths = sorted(os.listdir(images_base))
-        ## TODO: exclude the 2 other files
         chosen_images = [images_paths[i] for i in self.random_indices]
         model_path = os.path.join(self.dataset_path, "ShapeNetVox32/ShapeNetVox32", cls,current,"model.binvox")
 
-        ## TODO: CONVERT TO FLOAT
         volume = load_binvox_as_tensor(model_path)
         v_images = []
         r_images = []
         for image in chosen_images:
             image_path = os.path.join(images_base, image)
-            img = Image.open(image_path)
+            img = Image.open(image_path).convert("RGB")
             img = self.transform(img)
             v_img = T.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])(img)
             r_img = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(img)
             v_images.append(v_img)
             r_images.append(r_img)
+        print(v_images)
         v_images = torch.stack(v_images, dim=0)
         r_images = torch.stack(r_images, dim=0)
         return v_images, r_images, volume

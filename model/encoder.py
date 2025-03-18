@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torchvision.models import ResNet50_Weights, ViT_B_16_Weights
 from torchvision.models import resnet50, vit_b_16
-
+from utils.debugger import DEBUG
 
 
 class Encoder(nn.Module):
@@ -92,8 +92,8 @@ class Encoder(nn.Module):
 
 
 
-    def forward_ViT(self, img):
-        x = self.ViT(img)
+    def forward_ViT(self, x):
+        x = self.ViT(x)
         x = self.projection(x)
         return x
 

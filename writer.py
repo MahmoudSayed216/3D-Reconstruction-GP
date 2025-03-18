@@ -8,7 +8,7 @@ class Writer:
     def add_line(self, line):
         self.file.write(line)
     
-    def add_scaler(self, tag, step, value):
+    def add_scaler(self, tag: str, step: int, value):
 
         line = f"step {step}: {tag} = {value}\n"
         self.file.write(line)
