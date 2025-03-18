@@ -34,7 +34,7 @@ train:
   gamma: 0.5
   lr_milestones: [30, 60, 90]
   print_every: 50 #IN MINI-BATCHES
-  save_weights_every: 5 #IN EPOCHS
+  save_every: 5 #IN EPOCHS
   output_dir: "/home/mahmoud-sayed/Desktop/Graduation Project/current/Pix2VoxFormer/outputs"
   n_view_const: 10
   n_views_max: 15

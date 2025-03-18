@@ -8,7 +8,7 @@ import json
 from utils.utils import load_binvox_as_tensor
 from PIL import Image
 import torchvision.transforms as T
-
+from utils.debugger import DEBUG
 
 class ShapeNet3DDataset(Dataset):
 
@@ -66,7 +66,6 @@ class ShapeNet3DDataset(Dataset):
             r_img = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(img)
             v_images.append(v_img)
             r_images.append(r_img)
-        print(v_images)
         v_images = torch.stack(v_images, dim=0)
         r_images = torch.stack(r_images, dim=0)
         return v_images, r_images, volume

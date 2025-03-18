@@ -1,7 +1,8 @@
 # from Model import ALittleBitOfThisAndALittleBitOfThatNet
-from model import encoder, decoder, merger, refiner, network_utils
+from model import encoder, decoder, merger, refiner
 from metrics.loss import VoxelLoss
 from metrics.IoU import compute_iou
+from utils import network_utils
 from writer import Writer
 from Dataset import ShapeNet3DDataset
 import yaml
@@ -40,7 +41,7 @@ def gaussian_random(low=1, high=12):
 
 def update_dataset_configs(loader, multi_view, n_views=0):
     random_value = 1 # gets updated only if multi_view
-    if multi_view and n_views != 0:
+    if multi_view and n_views == 0:
         random_value = gaussian_random(1, 12)
         loader.dataset.set_n_views_rendering(random_value)
     else:
@@ -51,9 +52,7 @@ def update_dataset_configs(loader, multi_view, n_views=0):
 
 def merge_feature_maps(BATCH_SIZE, n_views, lvl3, latent_space):
     latent_space = latent_space.view(BATCH_SIZE, n_views, 128, 2,2,2)
-    LOG("latent space", latent_space.shape)
     lvl3 = lvl3.view(BATCH_SIZE, n_views, 1568, 2, 2, 2)
-    LOG("lvl3 shape",lvl3.shape)
     base_input = torch.cat([lvl3, latent_space], dim=2)
     return base_input
     
@@ -68,7 +67,6 @@ def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_f
     Refiner.eval()
     TEST_LOSS_ACCUMULATOR = 0
     BATCH_SIZE = loader.batch_size
-    ITERATIONS_PER_EPOCH = len(loader)/BATCH_SIZE
     IOU_40 = []
     IOU_50 = []
     IOU_75 = []
@@ -105,7 +103,8 @@ def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_f
                     elif i == 2:
                         IOU_75.append(iou)
 
-            mean_loss = TEST_LOSS_ACCUMULATOR/ITERATIONS_PER_EPOCH
+            DEBUG("IPE TEST", batch_idx+1)
+            mean_loss = TEST_LOSS_ACCUMULATOR/(batch_idx+1)
             mean_IoU_40 = sum(IOU_40)/len(IOU_40)
             mean_IoU_50 = sum(IOU_50)/len(IOU_50)
             mean_IoU_75 = sum(IOU_75)/len(IOU_75)
@@ -123,6 +122,8 @@ def initiate_training_environment(path: str):
         os.mkdir(os.path.join(path))
     new_path = os.path.join(path, datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
     os.mkdir(new_path)
+    os.mkdir(os.path.join(new_path, "weights"))
+    os.mkdir(os.path.join(new_path, "samples"))
 
     return new_path
 
@@ -166,6 +167,7 @@ def train(configs):
                                       transforms=train_transformations)
     train_dataset.set_n_views_rendering(1)
     train_dataset.choose_images_indices_for_epoch()
+
     test_dataset = ShapeNet3DDataset(dataset_path=dataset_cfg["data_path"],
                                       json_file_path=dataset_cfg["json_mapper"],
                                       split='test',
@@ -200,7 +202,7 @@ def train(configs):
 
     ## loss configs
     loss_fn = VoxelLoss(weight=10) # cuz loss is always multiplied by 10 in original p2v impl
-    best_val_loss = float('inf')
+    best_val_iou = float(0)
 
     BATCH_SIZE = train_cfg["batch_size"]
     n_views = 1
@@ -211,6 +213,7 @@ def train(configs):
     START_EPOCH = train_cfg["start_epoch"]
 
     for epoch in range(START_EPOCH, EPOCHS):
+        LOG("EPOCH", epoch+1)
         if epoch == train_cfg["epochs_till_merger"]:
             writer.add_line("MERGER WILL NOW BE USED")
             USE_MERGER = True
@@ -270,17 +273,29 @@ def train(configs):
 
         mean_loss = TRAIN_LOSS_ACCUMULATOR/ITERATIONS_PER_EPOCH
 
-        LOG("mean_loss", mean_loss)
-        if mean_loss < best_val_loss:
-            best_val_loss = mean_loss
-            torch.save(gen_vol, "output.pth")
-            LOG("tensor saved")
 
-        LOG("EPOCH", epoch+1)
         LOG("TESTING")
         valid_loss, valid_IoU = compute_validation_metrics(Encoder, Decoder, Merger, Refiner, test_loader, loss_fn, n_views, THRESHOLDS, USE_MERGER, USE_REFINER)
-        LOG("valid_loss", valid_loss)
-        LOG("valid iou", valid_IoU)
+        mean_iou = sum(valid_IoU)/len(valid_IoU)
+
+        if mean_iou > best_val_iou:
+            best_val_iou = mean_iou
+            
+            LOG(f"IoU has scored a higher value at epoch {epoch+1}. Saving Weights...")
+            writer.add_line(f"IoU has scored a higher value at epoch {epoch+1}. Saving Weights...")
+
+            weights_path = os.path.join(configs["train_path"], "weights", "best.pth")
+            network_utils.save_checkpoints(weights_path, epoch+1, Encoder, E_optim, Decoder, D_optim, Refiner, R_optim , Merger,  M_optim, mean_iou, epoch+1)
+            
+            samples_path = os.path.join(configs["train_path"], "samples", f"output{epoch+1}.pth")
+            torch.save(gen_vol, samples_path)
+
+            LOG("tensor saved")
+
+        if (epoch+1) % train_cfg["save_every"] == 0:
+            weights_path = os.path.join(configs["train_path"], "weights", "last.pth")
+            network_utils.save_checkpoints(weights_path, epoch+1, Encoder, E_optim, Decoder, D_optim, Refiner, R_optim , Merger,  M_optim, mean_iou, epoch+1)
+
         if (epoch+1) % train_cfg["reduce_lr_epochs"]== 0:
             LOG("REDUCING LR")
             reduce_lr_factor = train_cfg["reduce_lr_factor"]
@@ -300,8 +315,8 @@ def train(configs):
         writer.add_scaler("VALID LOSS", epoch+1, valid_loss)
         writer.add_scaler("VALID IoU@40", epoch+1, valid_IoU[0])
         writer.add_scaler("VALID IoU@50", epoch+1, valid_IoU[1])
-        writer.add_scaler("VALID IoU@60", epoch+1, valid_IoU[2])
-
+        writer.add_scaler("VALID IoU@75", epoch+1, valid_IoU[2])
+        writer.add_scaler("Mean IoU", epoch+1, mean_iou)
 
         n_views = update_dataset_configs(train_loader, USE_MERGER)
         update_dataset_configs(test_loader, USE_MERGER, n_views)

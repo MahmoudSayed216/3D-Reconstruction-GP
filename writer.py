@@ -6,7 +6,7 @@ class Writer:
     def save_configs(self, cfg):
         pass
     def add_line(self, line):
-        self.file.write(line)
+        self.file.write(line+"\n")
     
     def add_scaler(self, tag: str, step: int, value):
 
