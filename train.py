@@ -58,7 +58,7 @@ def merge_feature_maps(BATCH_SIZE, n_views, lvl3, latent_space):
 
 
 
-def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_fn, n_views, THRESHOLDS, USE_MERGER, USE_REFINER):
+def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_fn, n_views, THRESHOLDS, USE_MERGER):
     Encoder.eval()
     Decoder.eval()
     Merger.eval()
@@ -206,7 +206,7 @@ def train(configs):
     BATCH_SIZE = train_cfg["batch_size"]
     n_views = 1
     USE_MERGER = train_cfg["epochs_till_merger"] == 0
-    USE_REFINER = train_cfg["epochs_till_refiner"] == 0
+    # USE_REFINER = train_cfg["epochs_till_refiner"] == 0
     EPOCHS = train_cfg["epochs"]
     ITERATIONS_PER_EPOCH = int(len(train_dataset)/BATCH_SIZE)
     START_EPOCH = train_cfg["start_epoch"]
@@ -273,7 +273,7 @@ def train(configs):
 
 
         LOG("TESTING")
-        valid_loss, valid_IoU = compute_validation_metrics(Encoder, Decoder, Merger, Refiner, test_loader, loss_fn, n_views, THRESHOLDS, USE_MERGER, USE_REFINER)
+        valid_loss, valid_IoU = compute_validation_metrics(Encoder, Decoder, Merger, Refiner, test_loader, loss_fn, n_views, THRESHOLDS, USE_MERGER)
         mean_iou = sum(valid_IoU)/len(valid_IoU)
 
         if mean_iou > best_val_iou:
