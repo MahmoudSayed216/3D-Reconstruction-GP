@@ -280,7 +280,7 @@ def train(configs):
             mean_loss = TRAIN_LOSS_ACCUMULATOR/ITERATIONS_PER_EPOCH
 
         LOG("TESTING")
-        valid_loss, valid_IoU = compute_validation_metrics(Encoder, Decoder, Merger, Refiner, test_loader, loss_fn, n_views, THRESHOLDS, USE_MERGER)
+        valid_loss, valid_IoU = compute_validation_metrics(Encoder, Decoder, Merger, Refiner, test_loader, n_views, THRESHOLDS, USE_MERGER)
         LOG("average test loss", valid_loss)
         LOG("average test IoU", valid_IoU)
         mean_iou = sum(valid_IoU)/len(valid_IoU)
