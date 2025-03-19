@@ -43,7 +43,6 @@ class Refiner(torch.nn.Module):
         )
         self.layer8 = torch.nn.Sequential(
             torch.nn.ConvTranspose3d(32, 1, kernel_size=4, stride=2, bias=use_bias, padding=1),
-            torch.nn.Sigmoid()
         )
 
     def forward(self, coarse_volumes):
