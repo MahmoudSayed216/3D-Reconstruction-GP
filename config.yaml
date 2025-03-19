@@ -1,6 +1,6 @@
 device: cuda
 use_debugger: True
-thresholds: [0.4, 0.5, 0.75]
+thresholds: [0.3, 0.5, 0.75]
 dataset: 
   json_mapper: "/kaggle/working/3D-Reconstruction-GP/dataset mapper/ShapeNet.json"
   data_path: "/kaggle/input/shapenet" 

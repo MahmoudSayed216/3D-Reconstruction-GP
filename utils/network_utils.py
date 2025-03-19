@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch.nn.init as init
 import torch
 from datetime import datetime as dt
+from utils.debugger import CHECKPOINT
 
 
 def init_weights(l):
@@ -21,6 +22,7 @@ def init_weights(l):
 def save_checkpoints(file_path, epoch_idx, encoder, encoder_solver, decoder, decoder_solver, refiner,
                      refiner_solver, merger, merger_solver, iou, epoch):
     print('[INFO] %s Saving checkpoint to %s ...' % (dt.now(), file_path))
+    CHECKPOINT(f"{dt.now()} Saving checkpoints to {file_path}")
     checkpoint = {
         'epoch_idx': epoch_idx,
         'iou': iou,

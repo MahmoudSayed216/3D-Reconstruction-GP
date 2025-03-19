@@ -70,7 +70,7 @@ def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, n_view
     IOU_75 = []
     loss_fn = VoxelLoss(weight=10)
     with torch.no_grad():
-        with torch.amp.autocast("cuda"):
+        # with torch.amp.autocast("cuda"):
 
             for batch_idx, batch in enumerate(loader):
                 r_img, v_img, gt_vol = batch
@@ -152,15 +152,16 @@ def train(configs):
         T.RandomResizedCrop(224),
         T.RandomHorizontalFlip(),
         T.RandomRotation(degrees=15),
-        T.ToTensor(),
-        T.RandomApply([T.Lambda(lambda x: x + 0.1 * torch.randn_like(x))], p=0.2),
+        T.RandomApply([T.Lambda(lambda x: x + 0.02 * torch.randn_like(x))], p=0.2),
         T.Lambda(lambda x: torch.clamp(x, 0.0, 255.0)),
+        T.ToTensor(),
         T.ColorJitter(brightness=augmentation_cfg["brightness"],
                       contrast=augmentation_cfg["contrast"],
                       saturation=augmentation_cfg["saturation"]),
     ])
     test_transformations = T.Compose([
-        T.Resize(224),
+        T.Resize(256),
+        T.CenterCrop(224),
         T.ToTensor()
     ])
 

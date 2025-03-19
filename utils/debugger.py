@@ -3,11 +3,13 @@ class DEBUGGER_SINGLETON:
     active = False
     debug_count = 0
     log_count = 0
+    checkpoint_count = 0
 
 
 color_code_map = {
     'red': "\033[31m",
     'green': "\033[32m",
+    'cyan': "\033[36m"
 }
 
 reset = "\033[0m"
@@ -43,3 +45,9 @@ def LOG(string: str, obj= None):
     print("\n")
     DEBUGGER_SINGLETON.log_count+=1
 
+def CHECKPOINT(string):
+    counter_str = str(DEBUGGER_SINGLETON.checkpoint_count).rjust(3, '0')
+    source = 'CHECKPOINT'
+    color = 'cyan'
+    _log_colored(string, source, counter_str, color)
+    DEBUGGER_SINGLETON.checkpoint_count+=1
