@@ -134,46 +134,65 @@
 # print(freq)
 
 
-import torch
-import matplotlib.pyplot as plt
-from timm import create_model
-from torchvision import transforms
-from PIL import Image
+# import torch
+# import matplotlib.pyplot as plt
+# from timm import create_model
+# from torchvision import transforms
+# from PIL import Image
 
 
-# Load a pretrained Swin model with feature extraction
-swin = create_model("swin_base_patch4_window7_224", pretrained=True, features_only=True)
-swin.eval()
+# # Load a pretrained Swin model with feature extraction
+# swin = create_model("swin_base_patch4_window7_224", pretrained=True, features_only=True)
+# swin.eval()
 
-# Load and preprocess an image
-image = Image.open("/home/mahmoud-sayed/Desktop/Cat_August_2010-4.jpg").convert("RGB")  # Replace with an actual image
-transform = transforms.Compose([
-    transforms.Resize(256),  # Resize so the shorter side is 256
-    transforms.CenterCrop(224),  # Crop to (224, 224) centered
-    transforms.ToTensor(),  # Convert to tensor
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize for ImageNet
-])
+# # Load and preprocess an image
+# image = Image.open("/home/mahmoud-sayed/Desktop/Cat_August_2010-4.jpg").convert("RGB")  # Replace with an actual image
+# transform = transforms.Compose([
+#     transforms.Resize(256),  # Resize so the shorter side is 256
+#     transforms.CenterCrop(224),  # Crop to (224, 224) centered
+#     transforms.ToTensor(),  # Convert to tensor
+#     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize for ImageNet
+# ])
 
-image = transform(image).unsqueeze(0)
-# image = ToTensor()(image).unsqueeze(0)  # Add batch dimension
+# image = transform(image).unsqueeze(0)
+# # image = ToTensor()(image).unsqueeze(0)  # Add batch dimension
 
-# Get feature maps
-with torch.no_grad():
-    feature_maps = swin(image)
+# # Get feature maps
+# with torch.no_grad():
+#     feature_maps = swin(image)
 
-def visualize_feature_map(feature_map, num_channels=100):
-    """
-    Plots a few feature maps (channels) from a given Swin Transformer feature map.
-    """
-    feature_map = feature_map.squeeze(0)  # Remove batch dim (C, H, W)
+# def visualize_feature_map(feature_map, num_channels=100):
+#     """
+#     Plots a few feature maps (channels) from a given Swin Transformer feature map.
+#     """
+#     feature_map = feature_map.squeeze(0)  # Remove batch dim (C, H, W)
     
-    fig, axes = plt.subplots(1, num_channels, figsize=(15, 5))
-    for i in range(num_channels):
-        axes[i].imshow(feature_map[i].cpu().numpy(), cmap="viridis")  # Pick channel i
-        axes[i].axis("off")
-    plt.show()
+#     fig, axes = plt.subplots(1, num_channels, figsize=(15, 5))
+#     for i in range(num_channels):
+#         axes[i].imshow(feature_map[i].cpu().numpy(), cmap="viridis")  # Pick channel i
+#         axes[i].axis("off")
+#     plt.show()
 
-# Visualize feature maps from each stage
-for i, fmap in enumerate(feature_maps):
-    print(f"Visualizing Stage {i+1} with shape {fmap.shape}")
-    visualize_feature_map(fmap, num_channels=6)  # Show 6 feature maps
+# # Visualize feature maps from each stage
+# for i, fmap in enumerate(feature_maps):
+#     print(f"Visualizing Stage {i+1} with shape {fmap.shape}")
+#     visualize_feature_map(fmap, num_channels=6)  # Show 6 feature maps
+
+
+
+# import os
+
+# path = "/home/mahmoud-sayed/Desktop/Graduation Project/current/Data/OriginalData/ShapeNetVox32"
+# _hash = '1042d723dfc31ce5ec56aed2da084563'
+# _hash = '941e751844d8b0aa8b424343280aeccb'
+# dirs = os.listdir(path)
+
+# for dir in dirs:
+#     f_path = os.path.join(path, dir)
+#     examples = os.listdir(f_path)
+#     for ex in examples:
+#         if ex == _hash:
+#             print(dir)
+#             print("FOUND")
+#             break
+# print("NOT FOUND")
