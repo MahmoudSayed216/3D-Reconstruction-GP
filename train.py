@@ -218,6 +218,7 @@ def train(configs):
     for epoch in range(START_EPOCH, EPOCHS):
         LOG("EPOCH", epoch+1)
         if epoch == train_cfg["epochs_till_merger"]:
+            LOG("MERGRE WILL NOW BE USED")
             writer.add_line("MERGER WILL NOW BE USED")
             USE_MERGER = True
         # if epoch == train_cfg["epochs_till_refiner"]:
@@ -350,19 +351,9 @@ def main():
 
     train_path = initiate_training_environment(configs["train"]["output_dir"])
     configs["train_path"] = train_path
-#     ##TODO: CALL THESE 2 NIGGAS AT THE END OF EACH EPOCH
-#     train_dataloader.dataset.set_n_views_rendering(10) ## 12 is a random number from lower bound 2 upper bound in config file
-#     train_dataloader.dataset.choose_images_indices_for_epoch()
-#     # train_pix2vox(cfg, train_dataloader, train_dataloader)
     train(configs=configs)
 
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
