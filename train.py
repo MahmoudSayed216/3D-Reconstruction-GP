@@ -19,11 +19,9 @@ import numpy as np
 
 
 if torch.cuda.is_available():
-    from torch.cuda.amp import autocast, GradScaler
     LOG("CUDA DETECTED")
 else:
-    from torch.cpu.amp import autocast, GradScaler
-
+    LOG("CPU DETECTED")
 
 
 
@@ -148,7 +146,7 @@ def train(configs):
     THRESHOLDS = configs["thresholds"]
     BATCH_SIZE = train_cfg["batch_size"]
     
-    scaler = GradScaler()
+    scaler = torch.amp.GradScaler('cuda')
     train_transformations = T.Compose([
         T.RandomResizedCrop(224),
         T.RandomHorizontalFlip(),
