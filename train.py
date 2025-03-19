@@ -197,10 +197,10 @@ def train(configs):
 
     # Defining Optimizers
     learning_rate = train_cfg["lr"]
-    E_optim = torch.optim.Adam(Encoder.parameters(), lr=learning_rate)
-    D_optim = torch.optim.Adam(Decoder.parameters(), lr=learning_rate)
-    M_optim = torch.optim.Adam(Merger.parameters(), lr=learning_rate)
-    R_optim = torch.optim.Adam(Refiner.parameters(), lr=learning_rate)
+    E_optim = torch.optim.Adam(Encoder.parameters(), lr=learning_rate, weight_decay=1e-2)
+    D_optim = torch.optim.Adam(Decoder.parameters(), lr=learning_rate, weight_decay=1e-3)
+    M_optim = torch.optim.Adam(Merger.parameters(), lr=learning_rate, weight_decay=1e-3)
+    R_optim = torch.optim.Adam(Refiner.parameters(), lr=learning_rate, weight_decay=1e-3)
 
 
     ## loss configs
@@ -279,12 +279,12 @@ def train(configs):
 
             mean_loss = TRAIN_LOSS_ACCUMULATOR/ITERATIONS_PER_EPOCH
 
-        LOG("average train loss", mean_iou)
         LOG("TESTING")
         valid_loss, valid_IoU = compute_validation_metrics(Encoder, Decoder, Merger, Refiner, test_loader, loss_fn, n_views, THRESHOLDS, USE_MERGER)
         LOG("average test loss", valid_loss)
         LOG("average test IoU", valid_IoU)
         mean_iou = sum(valid_IoU)/len(valid_IoU)
+        LOG("average train loss", mean_iou)
 
         if mean_iou > best_val_iou:
             best_val_iou = mean_iou
