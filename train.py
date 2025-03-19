@@ -169,14 +169,14 @@ def train(configs):
                                       split='train',
                                       transforms=train_transformations)
     train_dataset.set_n_views_rendering(1)
-    train_dataset.choose_images_indices_for_epoch()
+    # train_dataset.choose_images_indices_for_epoch()
 
     test_dataset = ShapeNet3DDataset(dataset_path=dataset_cfg["data_path"],
                                       json_file_path=dataset_cfg["json_mapper"],
                                       split='test',
                                       transforms=test_transformations)
     test_dataset.set_n_views_rendering(1)
-    test_dataset.choose_images_indices_for_epoch()
+    # test_dataset.choose_images_indices_for_epoch()
 
     
 
