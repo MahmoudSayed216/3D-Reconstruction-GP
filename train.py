@@ -74,6 +74,9 @@ def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_f
 
             for batch_idx, batch in enumerate(loader):
                 r_img, v_img, gt_vol = batch
+                v_img = v_img.to("cuda")
+                r_img = r_img.to("cuda")
+                gt_vol = gt_vol.to("cuda")
                 #ENCODER
                 lvl0, lvl1, lvl2, lvl3, latent_space = Encoder(v_img, r_img)
                 
