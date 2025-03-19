@@ -4,7 +4,7 @@ thresholds: [0.4, 0.5, 0.75]
 dataset: 
   json_mapper: "/kaggle/working/3D-Reconstruction-GP/dataset mapper/ShapeNet.json"
   data_path: "/kaggle/input/shapenet" 
-  n_classes: 4
+  n_classes: 12
 
 
 model:
@@ -18,7 +18,7 @@ model:
     blender: False #implement this shi
   
   lrelu_factor: 0.2
-  use_bias: False
+  use_bias: True
 
 
 train:

@@ -20,6 +20,7 @@ import numpy as np
 
 if torch.cuda.is_available():
     from torch.cuda.amp import autocast, GradScaler
+    LOG("CUDA DETECTED")
 else:
     from torch.cpu.amp import autocast, GradScaler
 
@@ -227,14 +228,14 @@ def train(configs):
         Refiner.train()
         TRAIN_LOSS_ACCUMULATOR = 0
         LOG("TRAINING")
-        for batch_idx, batch in enumerate(train_loader):
-            E_optim.zero_grad()
-            D_optim.zero_grad()
-            M_optim.zero_grad()
-            R_optim.zero_grad()
-            v_img, r_img, gt_vol = batch
-            
-            with autocast():
+        with autocast():
+            for batch_idx, batch in enumerate(train_loader):
+                E_optim.zero_grad()
+                D_optim.zero_grad()
+                M_optim.zero_grad()
+                R_optim.zero_grad()
+                v_img, r_img, gt_vol = batch
+                
                 #ENCODER
                 lvl0, lvl1, lvl2, lvl3, latent_space = Encoder(v_img, r_img)
                 
@@ -254,22 +255,22 @@ def train(configs):
                 loss = loss_fn(gen_vol, gt_vol)
                 TRAIN_LOSS_ACCUMULATOR+=loss.item()
 
-            scaler.scale(loss).backward()
+                scaler.scale(loss).backward()
 
-            scaler.step(E_optim)
-            scaler.step(D_optim)
-            if USE_MERGER:
-                scaler.step(M_optim)
-                
-            # if USE_REFINER:
-            scaler.step(R_optim)
+                scaler.step(E_optim)
+                scaler.step(D_optim)
+                if USE_MERGER:
+                    scaler.step(M_optim)
 
-            scaler.update()
-            ##TODO: DRAW SOME SHAPES EVERY WHILE
-            if batch_idx % train_cfg["print_every"] == 0:
-                LOG(loss.item())
+                # if USE_REFINER:
+                scaler.step(R_optim)
 
-        mean_loss = TRAIN_LOSS_ACCUMULATOR/ITERATIONS_PER_EPOCH
+                scaler.update()
+                  ##TODO: DRAW SOME SHAPES EVERY WHILE
+                if batch_idx % train_cfg["print_every"] == 0:
+                    LOG(loss.item())
+
+            mean_loss = TRAIN_LOSS_ACCUMULATOR/ITERATIONS_PER_EPOCH
 
 
         LOG("TESTING")
