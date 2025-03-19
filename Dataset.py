@@ -50,7 +50,7 @@ class ShapeNet3DDataset(Dataset):
     def __getitem__(self, index):
         cls, current = self.data[index][0:8], self.data[index][8:]
         # cls = self.classes[class_idx]
-        images_base = os.path.join(self.dataset_path, "ShapeNetRendering/ShapeNetRendering",cls, current)
+        images_base = os.path.join(self.dataset_path, "ShapeNetRendering/ShapeNetRendering",cls, current, "rendering")
         images_paths = sorted(os.listdir(images_base))
         chosen_images = [images_paths[i] for i in self.random_indices]
         model_path = os.path.join(self.dataset_path, "ShapeNetVox32/ShapeNetVox32", cls,current,"model.binvox")
