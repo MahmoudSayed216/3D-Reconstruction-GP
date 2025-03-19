@@ -22,7 +22,7 @@ model:
 
 
 train:
-  batch_size: 3
+  batch_size: 32
   epochs: 10
   epochs_till_merger: 3
   epochs_till_refiner: 250

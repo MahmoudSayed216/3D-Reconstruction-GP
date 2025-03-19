@@ -241,7 +241,6 @@ def train(configs):
                 #DECODER
                 base_input = merge_feature_maps(BATCH_SIZE, n_views, lvl3, latent_space)
                 raw, gen_vol = Decoder(lvl0, lvl1, lvl2, base_input)
-                DEBUG("gen vol shape", gen_vol.shape)
                 #MERGER
                 if USE_MERGER:
                     gen_vol = Merger(raw, gen_vol)
