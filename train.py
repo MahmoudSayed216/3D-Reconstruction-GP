@@ -226,8 +226,8 @@ def train(configs):
         Merger.train()
         Refiner.train()
         TRAIN_LOSS_ACCUMULATOR = 0
+        LOG("TRAINING")
         for batch_idx, batch in enumerate(train_loader):
-            LOG("TRAINING")
             E_optim.zero_grad()
             D_optim.zero_grad()
             M_optim.zero_grad()
@@ -266,6 +266,8 @@ def train(configs):
 
             scaler.update()
             ##TODO: DRAW SOME SHAPES EVERY WHILE
+            if batch_idx % train_cfg["print_every"] == 0:
+                LOG(loss.item())
 
         mean_loss = TRAIN_LOSS_ACCUMULATOR/ITERATIONS_PER_EPOCH
 
