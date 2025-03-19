@@ -42,7 +42,7 @@ class ShapeNet3DDataset(Dataset):
     def set_n_views_rendering(self, n_views_rendering):
         self.n_views_rendering = n_views_rendering
 
-    def choose_images_indices_for_epoch(self):
+    def _choose_images_indices_for_epoch(self):
         self.random_indices = random.sample(self.list_of_24, self.n_views_rendering)
             
 
@@ -50,6 +50,7 @@ class ShapeNet3DDataset(Dataset):
     def __getitem__(self, index):
         cls, current = self.data[index][0:8], self.data[index][8:]
         # cls = self.classes[class_idx]
+        self._choose_images_indices_for_epoch()
         images_base = os.path.join(self.dataset_path, "ShapeNetRendering/ShapeNetRendering",cls, current, "rendering")
         images_paths = sorted(os.listdir(images_base))
         chosen_images = [images_paths[i] for i in self.random_indices]

@@ -44,7 +44,7 @@ def update_dataset_configs(loader, multi_view):
         random_value = gaussian_random(1, 12)
     loader.dataset.set_n_views_rendering(random_value)
         
-    loader.dataset.choose_images_indices_for_epoch()
+    # loader.dataset.choose_images_indices_for_epoch()
     return random_value
 
 def merge_feature_maps(BATCH_SIZE, n_views, lvl3, latent_space):
@@ -284,7 +284,7 @@ def train(configs):
         LOG("average test loss", valid_loss)
         LOG("average test IoU", valid_IoU)
         mean_iou = sum(valid_IoU)/len(valid_IoU)
-        LOG("average train loss", mean_iou)
+        LOG("average train loss", mean_loss)
 
         if mean_iou > best_val_iou:
             best_val_iou = mean_iou
@@ -329,7 +329,7 @@ def train(configs):
 
         n_views = update_dataset_configs(train_loader, USE_MERGER)
         test_loader.dataset.set_n_views_rendering(n_views)
-        test_loader.dataset.choose_images_indices_for_epoch()
+        # test_loader.dataset.choose_images_indices_for_epoch()
 
     writer.close()
 
