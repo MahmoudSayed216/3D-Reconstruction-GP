@@ -70,7 +70,8 @@ def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_f
     IOU_50 = []
     IOU_75 = []
     with torch.no_grad():
-        with autocast():
+        with torch.amp.autocast("cuda"):
+
             for batch_idx, batch in enumerate(loader):
                 r_img, v_img, gt_vol = batch
                 #ENCODER
@@ -228,13 +229,17 @@ def train(configs):
         Refiner.train()
         TRAIN_LOSS_ACCUMULATOR = 0
         LOG("TRAINING")
-        with autocast():
+        with torch.amp.autocast("cuda"):
+
             for batch_idx, batch in enumerate(train_loader):
                 E_optim.zero_grad()
                 D_optim.zero_grad()
                 M_optim.zero_grad()
                 R_optim.zero_grad()
                 v_img, r_img, gt_vol = batch
+                v_img = v_img.to("cuda")
+                r_img = r_img.to("cuda")
+                gt_vol = gt_vol.to("cuda")
                 
                 #ENCODER
                 lvl0, lvl1, lvl2, lvl3, latent_space = Encoder(v_img, r_img)
