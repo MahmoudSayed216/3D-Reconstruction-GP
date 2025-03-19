@@ -1,4 +1,4 @@
-device: cpu
+device: cuda
 use_debugger: True
 thresholds: [0.4, 0.5, 0.75]
 dataset: 
@@ -23,9 +23,9 @@ model:
 
 train:
   batch_size: 32
-  epochs: 10
-  epochs_till_merger: 3
-  epochs_till_refiner: 250
+  epochs: 350
+  epochs_till_merger: 250
+  # epochs_till_refiner: 250
   lr: 0.001
   reduce_lr_epochs: 150
   reduce_lr_factor: 0.5
