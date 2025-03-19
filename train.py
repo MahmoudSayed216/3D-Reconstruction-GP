@@ -57,16 +57,18 @@ def merge_feature_maps(BATCH_SIZE, n_views, lvl3, latent_space):
 
 
 
-def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_fn, n_views, THRESHOLDS, USE_MERGER):
+def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, n_views, THRESHOLDS, USE_MERGER):
     Encoder.eval()
     Decoder.eval()
     Merger.eval()
     Refiner.eval()
+
     TEST_LOSS_ACCUMULATOR = 0
     BATCH_SIZE = loader.batch_size
     IOU_40 = []
     IOU_50 = []
     IOU_75 = []
+    loss_fn = VoxelLoss(weight=10)
     with torch.no_grad():
         with torch.amp.autocast("cuda"):
 
@@ -105,7 +107,6 @@ def compute_validation_metrics(Encoder, Decoder, Merger, Refiner, loader, loss_f
                     elif i == 2:
                         IOU_75.append(iou)
 
-            DEBUG("IPE TEST", batch_idx+1)
             mean_loss = TEST_LOSS_ACCUMULATOR/(batch_idx+1)
             mean_IoU_40 = sum(IOU_40)/len(IOU_40)
             mean_IoU_50 = sum(IOU_50)/len(IOU_50)
@@ -204,7 +205,7 @@ def train(configs):
 
     ## loss configs
     loss_fn = VoxelLoss(weight=10) # cuz loss is always multiplied by 10 in original p2v impl
-    best_val_iou = float(0)
+    best_val_iou = 0
 
     BATCH_SIZE = train_cfg["batch_size"]
     n_views = 1
@@ -278,9 +279,11 @@ def train(configs):
 
             mean_loss = TRAIN_LOSS_ACCUMULATOR/ITERATIONS_PER_EPOCH
 
-
+        LOG("average train loss", mean_iou)
         LOG("TESTING")
         valid_loss, valid_IoU = compute_validation_metrics(Encoder, Decoder, Merger, Refiner, test_loader, loss_fn, n_views, THRESHOLDS, USE_MERGER)
+        LOG("average test loss", valid_loss)
+        LOG("average test IoU", valid_IoU)
         mean_iou = sum(valid_IoU)/len(valid_IoU)
 
         if mean_iou > best_val_iou:
