@@ -53,7 +53,7 @@ class ShapeNet3DDataset(Dataset):
         DEBUG("current", current)
         cls = self.classes[class_idx]
         DEBUG("cls", cls)
-        images_base = os.path.join(self.dataset_path, "ShapeNetRendering/ShapeNetRendering",cls, current)
+        images_base = os.path.join(self.dataset_path, "ShapeNetRendering/ShapeNetRendering",cls, current, "rendering")
         DEBUG("image base", images_base)
         images_paths = sorted(os.listdir(images_base))
         DEBUG("images paths", images_paths)
