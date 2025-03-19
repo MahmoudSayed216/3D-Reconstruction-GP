@@ -281,10 +281,11 @@ def train(configs):
 
         LOG("TESTING")
         valid_loss, valid_IoU = compute_validation_metrics(Encoder, Decoder, Merger, Refiner, test_loader, n_views, THRESHOLDS, USE_MERGER)
-        LOG("average test loss", valid_loss)
-        LOG("average test IoU", valid_IoU)
         mean_iou = sum(valid_IoU)/len(valid_IoU)
         LOG("average train loss", mean_loss)
+        LOG("average test loss", valid_loss)
+        LOG("test IoU @ different THs", valid_IoU)
+        LOG("mean test IoU", mean_iou)
 
         if mean_iou > best_val_iou:
             best_val_iou = mean_iou
