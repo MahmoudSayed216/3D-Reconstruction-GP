@@ -180,19 +180,21 @@
 
 
 
-# import os
+import os
 
-# path = "/home/mahmoud-sayed/Desktop/Graduation Project/current/Data/OriginalData/ShapeNetVox32"
-# _hash = '1042d723dfc31ce5ec56aed2da084563'
-# _hash = '941e751844d8b0aa8b424343280aeccb'
-# dirs = os.listdir(path)
-
-# for dir in dirs:
-#     f_path = os.path.join(path, dir)
-#     examples = os.listdir(f_path)
-#     for ex in examples:
-#         if ex == _hash:
-#             print(dir)
-#             print("FOUND")
-#             break
-# print("NOT FOUND")
+path = "/home/mahmoud-sayed/Desktop/Graduation Project/current/Data/OriginalData/ShapeNetVox32"
+_hash = 'dadb71e216b54f701c5d4854f1aaed94'
+_hash = '37c76d4830a4968b719d8721fedc72f0c'
+dirs = os.listdir(path)
+f = False
+for dir in dirs:
+    f_path = os.path.join(path, dir)
+    examples = os.listdir(f_path)
+    for ex in examples:
+        if ex == _hash:
+            print(dir)
+            print("FOUND")
+            f = True
+            break
+if not f:
+    print("NOT FOUND")

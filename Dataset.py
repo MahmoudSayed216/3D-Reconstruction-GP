@@ -28,7 +28,7 @@ class ShapeNet3DDataset(Dataset):
         for i in range(len(json_file)):
             current = json_file[i][split]
             for j, file in enumerate(current):
-                file = str(i) + file
+                file = self.classes[i] + file
                 current[j] = file
 
             self.data.extend(current)
@@ -48,15 +48,10 @@ class ShapeNet3DDataset(Dataset):
 
 
     def __getitem__(self, index):
-        class_idx, current = int(self.data[index][0]), self.data[index][1:]
-        DEBUG("class idx", class_idx)
-        DEBUG("current", current)
-        cls = self.classes[class_idx]
-        DEBUG("cls", cls)
+        cls, current = self.data[index][0:8], self.data[index][8:]
+        # cls = self.classes[class_idx]
         images_base = os.path.join(self.dataset_path, "ShapeNetRendering/ShapeNetRendering",cls, current, "rendering")
-        DEBUG("image base", images_base)
         images_paths = sorted(os.listdir(images_base))
-        DEBUG("images paths", images_paths)
         chosen_images = [images_paths[i] for i in self.random_indices]
         model_path = os.path.join(self.dataset_path, "ShapeNetVox32/ShapeNetVox32", cls,current,"model.binvox")
 
