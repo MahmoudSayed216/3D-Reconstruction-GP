@@ -3,7 +3,7 @@ from model import decoder, encoder, merger, refiner
 import yaml
 
 configs = None
-with open("config.yaml", "r") as f:
+with open("config_local.yaml", "r") as f:
     configs = yaml.safe_load(f)
 
 model_cfg = configs["model"]

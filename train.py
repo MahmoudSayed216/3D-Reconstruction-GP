@@ -211,7 +211,7 @@ def train(configs):
     BATCH_SIZE = train_cfg["batch_size"]
     n_views = 1
     USE_MERGER = train_cfg["epochs_till_merger"] == 0
-    # USE_REFINER = train_cfg["epochs_till_refiner"] == 0
+    USE_REFINER = train_cfg["epochs_till_refiner"] == 0
     EPOCHS = train_cfg["epochs"]
     ITERATIONS_PER_EPOCH = int(len(train_dataset)/BATCH_SIZE)
     START_EPOCH = train_cfg["start_epoch"]
@@ -222,9 +222,10 @@ def train(configs):
             LOG("MERGRE WILL NOW BE USED")
             writer.add_line("MERGER WILL NOW BE USED")
             USE_MERGER = True
-        # if epoch == train_cfg["epochs_till_refiner"]:
-            # writer.add_line("REFINER WILL NOW BE USED")
-            # USE_REFINER = True
+        if epoch == train_cfg["epochs_till_refiner"]:
+            LOG("REFINRE WILL NOW BE USED")
+            writer.add_line("REFINER WILL NOW BE USED")
+            USE_REFINER = True
         
         
         Encoder.train()
@@ -233,7 +234,7 @@ def train(configs):
         Refiner.train()
         TRAIN_LOSS_ACCUMULATOR = 0
         LOG("TRAINING")
-        with torch.amp.autocast("cuda"):
+        with torch.amp.autocast(configs["device"], dtype=torch.float32):
 
             for batch_idx, batch in enumerate(train_loader):
                 E_optim.zero_grad()
@@ -241,9 +242,9 @@ def train(configs):
                 M_optim.zero_grad()
                 R_optim.zero_grad()
                 v_img, r_img, gt_vol = batch
-                v_img = v_img.to("cuda")
-                r_img = r_img.to("cuda")
-                gt_vol = gt_vol.to("cuda")
+                v_img = v_img.to(configs["device"])
+                r_img = r_img.to(configs["device"])
+                gt_vol = gt_vol.to(configs["device"])
                 
                 #ENCODER
                 lvl0, lvl1, lvl2, lvl3, latent_space = Encoder(v_img, r_img)
@@ -254,10 +255,9 @@ def train(configs):
                 #MERGER
                 if USE_MERGER:
                     gen_vol = Merger(raw, gen_vol)
-                else:
-                    gen_vol = gen_vol.squeeze(dim=1)
                 #REFINER
-                gen_vol = Refiner(gen_vol)
+                if USE_REFINER:
+                    gen_vol = Refiner(gen_vol)
 
                 gen_vol = gen_vol.squeeze(dim=1)
 
@@ -271,8 +271,8 @@ def train(configs):
                 if USE_MERGER:
                     scaler.step(M_optim)
 
-                # if USE_REFINER:
-                scaler.step(R_optim)
+                if USE_REFINER:
+                    scaler.step(R_optim)
 
                 scaler.update()
                   ##TODO: DRAW SOME SHAPES EVERY WHILE
