@@ -1,5 +1,5 @@
 ## Pix2VoxFormer Architecture
-
+## [This trash didn't work, however i'm keeping it here. don't waste your time exploring this abs trash 🙏]
 ![Alt Text](images/Next%20SOTA%203D%20reconstruction%20model(4).svg)
 
 
